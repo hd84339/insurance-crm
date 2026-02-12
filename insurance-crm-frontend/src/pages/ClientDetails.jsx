@@ -99,9 +99,9 @@ const ClientDetails = () => {
           <Link to={`/policies/new?clientId=${client._id}`} className="btn-outline flex items-center gap-2">
             <Plus className="w-4 h-4" /> Policy
           </Link>
-          <button className="btn-primary flex items-center gap-2">
+          <Link to={`/clients/edit/${client._id}`} className="btn-primary flex items-center gap-2">
             <Edit className="w-4 h-4" /> Edit Profile
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -159,8 +159,8 @@ const ClientDetails = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === tab.id
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                   >
                     <Icon className="w-4 h-4" />

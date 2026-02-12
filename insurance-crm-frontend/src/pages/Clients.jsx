@@ -216,15 +216,15 @@ const Clients = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`badge ${client.status === "Active" ? "badge-success" :
-                            client.status === "Inactive" ? "badge-danger" :
-                              "badge-info"
+                          client.status === "Inactive" ? "badge-danger" :
+                            "badge-info"
                           }`}>
                           {client.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
-                          <Link to={`/clients/${client._id}`} className="p-1 hover:bg-gray-100 rounded text-blue-600">
+                          <Link to={`/clients/edit/${client._id}`} className="p-1 hover:bg-gray-100 rounded text-blue-600">
                             <Edit className="w-4 h-4" />
                           </Link>
                           <button

@@ -57,6 +57,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="clients" element={<Clients />} />
           <Route path="clients/new" element={<ClientForm />} />
+          <Route path="clients/edit/:id" element={<ClientForm />} />
           <Route path="clients/:id" element={<ClientDetails />} />
           <Route path="policies" element={<Policies />} />
           <Route path="policies/:id" element={<PolicyDetails />} />

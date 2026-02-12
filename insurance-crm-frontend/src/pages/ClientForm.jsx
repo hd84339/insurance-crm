@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { clientAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { ArrowLeft, Save } from "lucide-react";
 
 const ClientForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -18,6 +19,34 @@ const ClientForm = () => {
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (id) {
+      loadClient();
+    }
+  }, [id]);
+
+  const loadClient = async () => {
+    try {
+      setLoading(true);
+      const response = await clientAPI.getById(id);
+      const client = response.data.data;
+      // Format DOB for input date field if exists
+      const dob = client.dateOfBirth ? new Date(client.dateOfBirth).toISOString().split('T')[0] : "";
+
+      setForm({
+        ...client,
+        dob: dob,
+        address: client.address?.street || client.address || "" // Handle if address is object or string
+      });
+    } catch (error) {
+      toast.error("Failed to load client details");
+      console.error(error);
+      navigate("/clients");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -26,11 +55,16 @@ const ClientForm = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      await clientAPI.create(form);
-      toast.success("Client created successfully");
+      if (id) {
+        await clientAPI.update(id, form);
+        toast.success("Client updated successfully");
+      } else {
+        await clientAPI.create(form);
+        toast.success("Client created successfully");
+      }
       navigate("/clients");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create client");
+      toast.error(err.response?.data?.message || `Failed to ${id ? 'update' : 'create'} client`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -43,7 +77,7 @@ const ClientForm = () => {
         <Link to="/clients" className="p-2 hover:bg-gray-100 rounded-full">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </Link>
-        <h2 className="text-2xl font-bold text-gray-900">Add New Client</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{id ? 'Edit Client' : 'Add New Client'}</h2>
       </div>
 
       <div className="card">
@@ -172,7 +206,7 @@ const ClientForm = () => {
               className="btn-primary px-6 flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
-              {loading ? "Saving..." : "Save Client"}
+              {loading ? "Saving..." : (id ? "Update Client" : "Save Client")}
             </button>
           </div>
         </form>
