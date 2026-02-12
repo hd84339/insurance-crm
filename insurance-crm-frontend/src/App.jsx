@@ -15,9 +15,14 @@ import Policies from "./pages/Policies";
 import PolicyDetails from "./pages/PolicyDetails";
 import Claims from "./pages/Claims";
 import ClaimDetails from "./pages/ClaimDetails";
+import ClaimForm from "./pages/ClaimForm";
 import Reminders from "./pages/Reminders";
+import ReminderForm from "./pages/ReminderForm";
 import Targets from "./pages/Targets";
+import TargetForm from "./pages/TargetForm";
 import Reports from "./pages/Reports";
+import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
 
 function App() {
   return (
@@ -56,10 +61,19 @@ function App() {
           <Route path="policies" element={<Policies />} />
           <Route path="policies/:id" element={<PolicyDetails />} />
           <Route path="claims" element={<Claims />} />
+          <Route path="claims/new" element={<ClaimForm />} />
+          <Route path="claims/edit/:id" element={<ClaimForm />} />
           <Route path="claims/:id" element={<ClaimDetails />} />
           <Route path="reminders" element={<Reminders />} />
+          <Route path="reminders/new" element={<ReminderForm />} />
+          <Route path="reminders/edit/:id" element={<ReminderForm />} />
           <Route path="targets" element={<Targets />} />
+          <Route path="targets/new" element={<TargetForm />} />
+          <Route path="targets/edit/:id" element={<TargetForm />} />
+
           <Route path="reports" element={<Reports />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>
