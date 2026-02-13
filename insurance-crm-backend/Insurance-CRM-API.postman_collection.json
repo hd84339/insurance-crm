@@ -1,0 +1,344 @@
+{
+  "info": {
+    "name": "Insurance CRM API",
+    "description": "Complete API collection for Insurance & Mutual Fund CRM",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "Get All Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "search", "value": "", "disabled": true},
+                {"key": "status", "value": "Active", "disabled": true}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients", ":id"],
+              "variable": [{"key": "id", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+919876543210\",\n  \"clientType\": \"Individual\",\n  \"priority\": \"Medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients"]
+            }
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": \"High\",\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients", ":id"],
+              "variable": [{"key": "id", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients", ":id"],
+              "variable": [{"key": "id", "value": ""}]
+            }
+          }
+        },
+        {
+          "name": "Get Client Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/stats/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clients", "stats", "overview"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Policies",
+      "item": [
+        {
+          "name": "Get All Policies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/policies?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "policies"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Policy",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client\": \"CLIENT_ID_HERE\",\n  \"policyNumber\": \"LIC-2024-001\",\n  \"policyType\": \"Life Insurance\",\n  \"company\": \"LIC\",\n  \"planName\": \"Jeevan Anand\",\n  \"premiumAmount\": 50000,\n  \"premiumFrequency\": \"Yearly\",\n  \"sumAssured\": 1000000,\n  \"policyTerm\": 20,\n  \"startDate\": \"2024-01-01\",\n  \"maturityDate\": \"2044-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/policies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "policies"]
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Renewals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/policies/renewal/upcoming?days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "policies", "renewal", "upcoming"],
+              "query": [{"key": "days", "value": "30"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Claims",
+      "item": [
+        {
+          "name": "Get All Claims",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"]
+            }
+          }
+        },
+        {
+          "name": "Create Claim",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy\": \"POLICY_ID_HERE\",\n  \"claimType\": \"Medical\",\n  \"claimAmount\": 100000,\n  \"incidentDate\": \"2024-01-15\",\n  \"description\": \"Medical treatment for illness\",\n  \"priority\": \"High\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims"]
+            }
+          }
+        },
+        {
+          "name": "Update Claim Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Approved\",\n  \"note\": \"All documents verified\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/claims/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "claims", ":id", "status"],
+              "variable": [{"key": "id", "value": ""}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reminders",
+      "item": [
+        {
+          "name": "Get All Reminders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders"]
+            }
+          }
+        },
+        {
+          "name": "Create Reminder",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client\": \"CLIENT_ID_HERE\",\n  \"reminderType\": \"Renewal\",\n  \"title\": \"Policy Renewal Due\",\n  \"dueDate\": \"2024-03-01\",\n  \"priority\": \"High\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders"]
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Reminders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders/upcoming/7",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders", "upcoming", "7"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Targets",
+      "item": [
+        {
+          "name": "Get All Targets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/targets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "targets"]
+            }
+          }
+        },
+        {
+          "name": "Create Target",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agent\": \"AGENT_ID_HERE\",\n  \"targetPeriod\": \"Quarterly\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-03-31\",\n  \"productType\": \"Life\",\n  \"targetAmount\": 5000000,\n  \"targetPolicies\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/targets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "targets"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Dashboard Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Policy Report (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/policies?format=json",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "policies"],
+              "query": [{"key": "format", "value": "json"}]
+            }
+          }
+        },
+        {
+          "name": "Policy Report (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/policies?format=excel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "policies"],
+              "query": [{"key": "format", "value": "excel"}]
+            }
+          }
+        },
+        {
+          "name": "Renewal Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/renewals?days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "renewals"],
+              "query": [{"key": "days", "value": "30"}]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}
