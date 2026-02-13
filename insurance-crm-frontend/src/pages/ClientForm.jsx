@@ -34,9 +34,14 @@ const ClientForm = () => {
       const dob = client.dateOfBirth ? new Date(client.dateOfBirth).toISOString().split('T')[0] : "";
 
       setForm({
-        ...client,
+        name: client.name || "",
+        phone: client.phone || "",
+        email: client.email || "",
+        address: client.address?.street || client.address || "",
         dob: dob,
-        address: client.address?.street || client.address || "" // Handle if address is object or string
+        occupation: client.occupation || "",
+        clientType: client.clientType || "Individual",
+        status: client.status || "Active",
       });
     } catch (error) {
       toast.error("Failed to load client details");
