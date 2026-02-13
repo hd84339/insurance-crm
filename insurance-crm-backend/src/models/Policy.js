@@ -114,13 +114,12 @@ const policySchema = new mongoose.Schema({
 
 // Indexes
 policySchema.index({ client: 1, status: 1 });
-policySchema.index({ policyNumber: 1 });
 policySchema.index({ renewalDate: 1, status: 1 });
 policySchema.index({ nextPremiumDue: 1, paymentStatus: 1 });
 policySchema.index({ policyType: 1, company: 1 });
 
 // Virtual for days until renewal
-policySchema.virtual('daysUntilRenewal').get(function() {
+policySchema.virtual('daysUntilRenewal').get(function () {
   if (!this.renewalDate) return null;
   const today = new Date();
   const renewal = new Date(this.renewalDate);
@@ -130,31 +129,31 @@ policySchema.virtual('daysUntilRenewal').get(function() {
 });
 
 // Pre-save middleware to update client statistics
-policySchema.post('save', async function() {
+policySchema.post('save', async function () {
   const Client = mongoose.model('Client');
   const policies = await mongoose.model('Policy').find({ client: this.client });
-  
+
   const stats = {
     totalPolicies: policies.length,
     totalPremium: policies.reduce((sum, p) => sum + p.premiumAmount, 0),
     totalMaturity: policies.reduce((sum, p) => sum + p.sumAssured, 0)
   };
-  
+
   await Client.findByIdAndUpdate(this.client, stats);
 });
 
 // Pre-remove middleware to update client statistics
-policySchema.post('findOneAndDelete', async function(doc) {
+policySchema.post('findOneAndDelete', async function (doc) {
   if (doc) {
     const Client = mongoose.model('Client');
     const policies = await mongoose.model('Policy').find({ client: doc.client });
-    
+
     const stats = {
       totalPolicies: policies.length,
       totalPremium: policies.reduce((sum, p) => sum + p.premiumAmount, 0),
       totalMaturity: policies.reduce((sum, p) => sum + p.sumAssured, 0)
     };
-    
+
     await Client.findByIdAndUpdate(doc.client, stats);
   }
 });
