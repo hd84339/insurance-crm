@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
-import { User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, Mail, Phone, MapPin, Save, Camera, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { userAPI } from '../services/api';
 
 const Profile = () => {
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [user, setUser] = useState({
-        name: 'Admin User',
-        email: 'admin@insurance-crm.com',
-        phone: '+91 98765 43210',
-        role: 'Administrator',
-        location: 'Mumbai, India',
-        bio: 'Senior Insurance Agent with 10+ years of experience in Life and Health insurance sectors.',
+        name: '',
+        email: '',
+        phone: '',
+        role: '',
+        location: '',
+        bio: '',
         avatar: null
     });
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        loadProfile();
+    }, []);
+
+    const loadProfile = async () => {
+        try {
+            const response = await userAPI.getProfile();
+            setUser(response.data.data);
+        } catch (error) {
+            console.error('Failed to load profile:', error);
+            toast.error('Failed to load profile');
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,11 +39,88 @@ const Profile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            const response = await userAPI.updateProfile({
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                location: user.location,
+                bio: user.bio
+            });
+            setUser(response.data.data);
             toast.success("Profile updated successfully");
-        }, 1000);
+        } catch (error) {
+            console.error('Update error:', error);
+            toast.error(error.response?.data?.message || "Failed to update profile");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size should be less than 5MB');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const response = await userAPI.uploadAvatar(formData);
+            setUser(response.data.data);
+            toast.success('Profile picture uploaded successfully');
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error(error.response?.data?.message || 'Failed to upload profile picture');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteAvatar = async () => {
+        if (!user.avatar) return;
+
+        if (!confirm('Are you sure you want to delete your profile picture?')) {
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const response = await userAPI.deleteAvatar();
+            setUser(response.data.data);
+            toast.success('Profile picture deleted successfully');
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete profile picture');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const getAvatarUrl = () => {
+        if (!user.avatar) return null;
+        // If avatar is already a full URL, use it; otherwise prepend API base URL
+        if (user.avatar.startsWith('http')) {
+            return user.avatar;
+        }
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        return baseUrl.replace('/api', '') + user.avatar;
     };
 
     return (
@@ -37,17 +131,49 @@ const Profile = () => {
                 {/* Left Column - Avatar & Core Info */}
                 <div className="md:col-span-1 space-y-6">
                     <div className="card text-center">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
                         <div className="relative inline-block">
-                            <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg overflow-hidden">
+                            <div
+                                className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={handleAvatarClick}
+                            >
                                 {user.avatar ? (
-                                    <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                    <img src={getAvatarUrl()} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <User className="w-16 h-16 text-blue-500" />
                                 )}
+                                {uploading && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                    </div>
+                                )}
                             </div>
-                            <button className="absolute bottom-4 right-0 p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700 shadow-md">
+                            <button
+                                type="button"
+                                onClick={handleAvatarClick}
+                                disabled={uploading}
+                                className="absolute bottom-4 right-0 p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700 shadow-md disabled:opacity-50"
+                                title="Upload profile picture"
+                            >
                                 <Camera className="w-4 h-4" />
                             </button>
+                            {user.avatar && (
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteAvatar}
+                                    disabled={uploading}
+                                    className="absolute bottom-4 left-0 p-2 bg-red-600 rounded-full text-white hover:bg-red-700 shadow-md disabled:opacity-50"
+                                    title="Delete profile picture"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                         <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
                         <p className="text-sm text-gray-500">{user.role}</p>

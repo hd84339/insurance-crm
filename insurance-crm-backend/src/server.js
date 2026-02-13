@@ -14,6 +14,7 @@ const claimRoutes = require('./routes/claimRoutes');
 const reminderRoutes = require('./routes/reminderRoutes');
 const targetRoutes = require('./routes/targetRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Initialize express app
 const app = express();
@@ -30,6 +31,9 @@ app.use(cors({
 app.use(compression()); // Compress responses
 app.use(express.json()); // Body parser
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
@@ -64,6 +68,7 @@ app.use('/api/claims', claimRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/targets', targetRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
 
 // Root route
 app.get('/', (req, res) => {

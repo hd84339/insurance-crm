@@ -108,4 +108,18 @@ export const reportAPI = {
   getClientActivity: (params) => api.get('/reports/client-activity', { params }),
 };
 
+// User API
+export const userAPI = {
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (data) => api.put('/users/profile', data),
+  uploadAvatar: (formData) => {
+    return api.post('/users/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  deleteAvatar: () => api.delete('/users/profile/avatar'),
+};
+
 export default api;
