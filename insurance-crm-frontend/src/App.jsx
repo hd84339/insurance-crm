@@ -13,6 +13,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientForm from "./pages/ClientForm";
 import Policies from "./pages/Policies";
 import PolicyDetails from "./pages/PolicyDetails";
+import PolicyForm from "./pages/PolicyForm";
 import Claims from "./pages/Claims";
 import ClaimDetails from "./pages/ClaimDetails";
 import ClaimForm from "./pages/ClaimForm";
@@ -65,6 +66,8 @@ function App() {
           <Route path="clients/edit/:id" element={<ClientForm />} />
           <Route path="clients/:id" element={<ClientDetails />} />
           <Route path="policies" element={<Policies />} />
+          <Route path="policies/new" element={<PolicyForm />} />
+          <Route path="policies/edit/:id" element={<PolicyForm />} />
           <Route path="policies/:id" element={<PolicyDetails />} />
           <Route path="claims" element={<Claims />} />
           <Route path="claims/new" element={<ClaimForm />} />
