@@ -65,10 +65,12 @@ function App() {
           <Route path="clients/new" element={<ClientForm />} />
           <Route path="clients/edit/:id" element={<ClientForm />} />
           <Route path="clients/:id" element={<ClientDetails />} />
+
           <Route path="policies" element={<Policies />} />
           <Route path="policies/new" element={<PolicyForm />} />
           <Route path="policies/edit/:id" element={<PolicyForm />} />
           <Route path="policies/:id" element={<PolicyDetails />} />
+
           <Route path="claims" element={<Claims />} />
           <Route path="claims/new" element={<ClaimForm />} />
           <Route path="claims/edit/:id" element={<ClaimForm />} />

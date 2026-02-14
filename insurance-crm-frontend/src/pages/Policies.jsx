@@ -39,7 +39,7 @@ const Policies = () => {
         pages: response.data.pages
       }));
     } catch (error) {
-      console.error(error);
+      console.error("Error loading policies:", error);
       if (error.response?.status !== 404) {
         toast.error("Failed to load policies");
       }
