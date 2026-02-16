@@ -15,6 +15,7 @@ const Profile = () => {
         bio: '',
         avatar: null
     });
+    const [showModal, setShowModal] = useState(false);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -144,7 +145,19 @@ const Profile = () => {
                                 onClick={handleAvatarClick}
                             >
                                 {user.avatar ? (
-                                    <img src={getAvatarUrl()} alt="Profile" className="w-full h-full object-cover" />
+                                    <img
+                                        src={getAvatarUrl()}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                        style={{
+                                            imageRendering: 'high-quality',
+                                            WebkitImageRendering: 'optimize-contrast'
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowModal(true);
+                                        }}
+                                    />
                                 ) : (
                                     <User className="w-16 h-16 text-blue-500" />
                                 )}
@@ -280,6 +293,32 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Full View Modal */}
+            {showModal && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-90 z-[100] flex items-center justify-center p-4"
+                    onClick={() => setShowModal(false)}
+                >
+                    <div className="relative max-w-4xl w-full h-full flex items-center justify-center">
+                        <img
+                            src={getAvatarUrl()}
+                            alt="Profile Full View"
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                            style={{
+                                imageRendering: 'high-quality',
+                                WebkitImageRendering: 'optimize-contrast'
+                            }}
+                        />
+                        <button
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-black bg-opacity-50 rounded-full transition-colors"
+                            onClick={() => setShowModal(false)}
+                        >
+                            <Trash2 className="w-6 h-6 rotate-45" /> {/* Using Trash2 as X icon for simplicity or import X */}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

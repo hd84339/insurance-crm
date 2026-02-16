@@ -15,7 +15,30 @@ const Layout = () => {
     { path: '/reports', label: 'Reports', icon: BarChart3 },
   ];
 
+  const [user, setUser] = React.useState(null);
+
+  React.useEffect(() => {
+    loadUserProfile();
+  }, []);
+
   const isActive = (path) => location.pathname.startsWith(path);
+
+  const loadUserProfile = async () => {
+    try {
+      const { userAPI } = await import('../services/api');
+      const response = await userAPI.getProfile();
+      setUser(response.data.data);
+    } catch (error) {
+      console.error('Failed to load user profile in layout:', error);
+    }
+  };
+
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return null;
+    if (user.avatar.startsWith('http')) return user.avatar;
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    return baseUrl.replace('/api', '') + user.avatar;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,8 +66,22 @@ const Layout = () => {
               <Bell className="w-5 h-5 text-gray-600" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </Link>
-            <Link to="/profile" className="p-2 hover:bg-gray-100 rounded-lg">
-              <User className="w-5 h-5 text-gray-600" />
+            <Link to="/profile" className="p-1 hover:bg-gray-100 rounded-full transition-all overflow-hidden border border-transparent hover:border-blue-200">
+              {user?.avatar ? (
+                <img
+                  src={getAvatarUrl()}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover shadow-sm bg-blue-50"
+                  style={{
+                    imageRendering: 'high-quality',
+                    WebkitImageRendering: 'optimize-contrast'
+                  }}
+                />
+              ) : (
+                <div className="p-2">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+              )}
             </Link>
           </div>
         </div>
