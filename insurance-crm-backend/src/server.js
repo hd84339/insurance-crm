@@ -18,7 +18,10 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 connectDB();
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
 app.use(compression());
 app.use(express.json());
