@@ -90,11 +90,25 @@ const PolicyForm = () => {
         e.preventDefault();
         try {
             setSaving(true);
+
+            // Sanitize data before sending
+            const sanitizedData = {
+                ...formData,
+                premiumAmount: Number(formData.premiumAmount),
+                sumAssured: Number(formData.sumAssured),
+                policyTerm: Number(formData.policyTerm),
+                // Convert empty strings to null for optional dates
+                renewalDate: formData.renewalDate || null,
+                nextPremiumDue: formData.nextPremiumDue || null,
+                maturityDate: formData.maturityDate || null,
+                startDate: formData.startDate || null
+            };
+
             if (isEdit) {
-                await policyAPI.update(id, formData);
+                await policyAPI.update(id, sanitizedData);
                 toast.success("Policy updated successfully");
             } else {
-                await policyAPI.create(formData);
+                await policyAPI.create(sanitizedData);
                 toast.success("Policy created successfully");
             }
             navigate("/policies");
@@ -345,6 +359,7 @@ const PolicyForm = () => {
                                 value={formData.policyTerm}
                                 onChange={handleChange}
                                 className="input-field w-full"
+                                required
                             />
                         </div>
                     </div>
