@@ -1,5 +1,6 @@
 const Claim = require('../models/Claim');
 const Policy = require('../models/Policy');
+const Agent = require('../models/Agent');
 
 // @desc    Get all claims
 // @route   GET /api/claims
@@ -21,13 +22,13 @@ exports.getClaims = async (req, res) => {
 
     // Build query
     const query = {};
-    
+
     if (search) {
       query.$or = [
         { claimNumber: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     if (status) query.status = status;
     if (claimType) query.claimType = claimType;
     if (priority) query.priority = priority;
@@ -190,7 +191,7 @@ exports.updateClaimStatus = async (req, res) => {
     }
 
     claim.status = status;
-    
+
     // Add to status history
     claim.statusHistory.push({
       status,

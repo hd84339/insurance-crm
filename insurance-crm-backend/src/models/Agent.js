@@ -55,11 +55,8 @@ const agentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
-agentSchema.index({ email: 1 });
-
 // Hash password before saving
-agentSchema.pre('save', async function(next) {
+agentSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -69,7 +66,7 @@ agentSchema.pre('save', async function(next) {
 });
 
 // Method to compare passwords
-agentSchema.methods.comparePassword = async function(candidatePassword) {
+agentSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 

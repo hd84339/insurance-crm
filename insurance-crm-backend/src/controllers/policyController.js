@@ -1,6 +1,7 @@
 const Policy = require('../models/Policy');
 const Client = require('../models/Client');
 const Target = require('../models/Target');
+const Agent = require('../models/Agent');
 
 // @desc    Get all policies
 // @route   GET /api/policies
@@ -22,14 +23,14 @@ exports.getPolicies = async (req, res) => {
 
     // Build query
     const query = {};
-    
+
     if (search) {
       query.$or = [
         { policyNumber: { $regex: search, $options: 'i' } },
         { planName: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     if (policyType) query.policyType = policyType;
     if (company) query.company = company;
     if (status) query.status = status;

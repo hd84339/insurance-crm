@@ -114,12 +114,11 @@ const claimSchema = new mongoose.Schema({
 // Indexes
 claimSchema.index({ client: 1, status: 1 });
 claimSchema.index({ policy: 1 });
-claimSchema.index({ claimNumber: 1 });
 claimSchema.index({ status: 1, priority: 1 });
 claimSchema.index({ claimDate: -1 });
 
 // Virtual for processing time
-claimSchema.virtual('processingDays').get(function() {
+claimSchema.virtual('processingDays').get(function () {
   if (this.settlementDate) {
     const diffTime = this.settlementDate - this.claimDate;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -130,7 +129,7 @@ claimSchema.virtual('processingDays').get(function() {
 });
 
 // Pre-save middleware to update status history
-claimSchema.pre('save', function(next) {
+claimSchema.pre('save', function (next) {
   if (this.isModified('status')) {
     this.statusHistory.push({
       status: this.status,

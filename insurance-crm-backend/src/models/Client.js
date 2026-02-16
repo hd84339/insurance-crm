@@ -101,7 +101,7 @@ clientSchema.index({ assignedAgent: 1, status: 1 });
 clientSchema.index({ createdAt: -1 });
 
 // Pre-save middleware to update statistics
-clientSchema.pre('save', function(next) {
+clientSchema.pre('save', function (next) {
   if (this.totalPolicies > 0) {
     this.isNewProspect = false;
     this.status = 'Active';

@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const Policy = require('../models/Policy');
+const Agent = require('../models/Agent');
 
 // @desc    Get all clients
 // @route   GET /api/clients
@@ -19,7 +20,7 @@ exports.getClients = async (req, res) => {
 
     // Build query
     const query = {};
-    
+
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -27,7 +28,7 @@ exports.getClients = async (req, res) => {
         { phone: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     if (status) query.status = status;
     if (clientType) query.clientType = clientType;
     if (priority) query.priority = priority;
