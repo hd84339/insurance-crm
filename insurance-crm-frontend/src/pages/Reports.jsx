@@ -190,7 +190,7 @@ const Reports = () => {
   return (
     <div className="flex flex-col md:flex-row gap-6 min-h-[calc(100vh-100px)]">
       {/* Sidebar */}
-      <div className="w-full md:w-64 flex-shrink-0">
+      <div className="w-full md:w-64 flex-shrink-0 no-print">
         <div className="card h-full p-4">
           <h3 className="text-lg font-bold text-gray-900 mb-6 px-2">Reports</h3>
           <nav className="space-y-1">
@@ -222,7 +222,7 @@ const Reports = () => {
       {/* Main Content */}
       <div className="flex-1 space-y-6">
         {/* Action Bar */}
-        <div className="card flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
+        <div className="card flex flex-col sm:flex-row justify-between items-center gap-4 p-4 no-print">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Filter className="w-5 h-5 text-gray-500" />
             <select
