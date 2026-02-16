@@ -18,7 +18,7 @@ const Targets = () => {
   const loadTargets = async () => {
     try {
       setLoading(true);
-      const response = await targetAPI.getAll(); // Assuming getAll exists
+      const response = await targetAPI.getAll();
       setTargets(response.data.data || []);
     } catch (error) {
       console.error(error);
