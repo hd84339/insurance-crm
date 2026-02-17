@@ -45,7 +45,7 @@ const targetSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Completed', 'Expired', 'Cancelled'],
+    enum: ['Active', 'Completed', 'Expired', 'Cancelled', 'Draft'],
     default: 'Active'
   },
   achievementPercentage: {
@@ -78,12 +78,12 @@ targetSchema.index({ agent: 1, targetPeriod: 1, startDate: -1 });
 targetSchema.index({ status: 1, endDate: 1 });
 
 // Virtual for shortfall
-targetSchema.virtual('shortfall').get(function() {
+targetSchema.virtual('shortfall').get(function () {
   return Math.max(0, this.targetAmount - this.achievedAmount);
 });
 
 // Virtual for days remaining
-targetSchema.virtual('daysRemaining').get(function() {
+targetSchema.virtual('daysRemaining').get(function () {
   if (this.status !== 'Active') return 0;
   const today = new Date();
   const end = new Date(this.endDate);
@@ -92,39 +92,39 @@ targetSchema.virtual('daysRemaining').get(function() {
 });
 
 // Virtual for is achieved
-targetSchema.virtual('isAchieved').get(function() {
+targetSchema.virtual('isAchieved').get(function () {
   return this.achievedAmount >= this.targetAmount;
 });
 
 // Pre-save middleware to calculate achievement percentage
-targetSchema.pre('save', function(next) {
+targetSchema.pre('save', function (next) {
   if (this.targetAmount > 0) {
     this.achievementPercentage = Math.min(100, (this.achievedAmount / this.targetAmount) * 100);
   }
-  
+
   // Check if bonus is applicable
   if (this.bonus && this.bonus.threshold && this.achievementPercentage >= this.bonus.threshold) {
     if (this.bonus.status === 'Not Applicable') {
       this.bonus.status = 'Pending';
     }
   }
-  
+
   // Auto-complete if achieved
   if (this.isAchieved && this.status === 'Active') {
     this.status = 'Completed';
   }
-  
+
   // Auto-expire if end date passed
   const today = new Date();
   if (this.endDate < today && this.status === 'Active') {
     this.status = 'Expired';
   }
-  
+
   next();
 });
 
 // Static method to get active targets
-targetSchema.statics.getActiveTargets = function(agentId) {
+targetSchema.statics.getActiveTargets = function (agentId) {
   return this.find({
     agent: agentId,
     status: 'Active'
@@ -132,9 +132,9 @@ targetSchema.statics.getActiveTargets = function(agentId) {
 };
 
 // Static method to update achievement from policy
-targetSchema.statics.updateFromPolicy = async function(policy) {
+targetSchema.statics.updateFromPolicy = async function (policy) {
   const today = new Date();
-  
+
   // Find active targets for the agent and period
   const targets = await this.find({
     agent: policy.assignedAgent,
@@ -146,7 +146,7 @@ targetSchema.statics.updateFromPolicy = async function(policy) {
       { productType: policy.policyType }
     ]
   });
-  
+
   // Update each matching target
   for (const target of targets) {
     target.achievedAmount += policy.premiumAmount;

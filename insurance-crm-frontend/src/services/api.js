@@ -108,6 +108,11 @@ export const reportAPI = {
   getClientActivity: (params) => api.get('/reports/client-activity', { params }),
 };
 
+// Agent API
+export const agentAPI = {
+  getAll: () => api.get('/agents'),
+};
+
 // User API
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),

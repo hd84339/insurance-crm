@@ -118,7 +118,7 @@ const Targets = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {targets.map((target) => {
-            const progress = calculateProgress(target.achievedValue, target.targetValue);
+            const progress = calculateProgress(target.achievedAmount, target.targetAmount);
             const isCompleted = progress >= 100;
 
             return (
@@ -126,10 +126,13 @@ const Targets = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold text-gray-900">{target.period} {target.type}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">{target.targetPeriod} {target.productType}</h3>
                       {isCompleted && <Award className="w-5 h-5 text-yellow-500" />}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-blue-600 font-medium mt-1">
+                      Agent: {target.agent?.name || 'Unassigned'}
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">
                       {new Date(target.startDate).toLocaleDateString()} - {new Date(target.endDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -148,19 +151,13 @@ const Targets = () => {
                     <div>
                       <p className="text-sm text-gray-500">Achieved</p>
                       <p className={`text-xl font-bold ${isCompleted ? 'text-green-600' : 'text-gray-900'}`}>
-                        {target.type === 'Premium'
-                          ? formatCurrency(target.achievedValue)
-                          : target.achievedValue
-                        }
+                        {formatCurrency(target.achievedAmount)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">Target</p>
                       <p className="text-lg font-semibold text-gray-700">
-                        {target.type === 'Premium'
-                          ? formatCurrency(target.targetValue)
-                          : target.targetValue
-                        }
+                        {formatCurrency(target.targetAmount)}
                       </p>
                     </div>
                   </div>
@@ -170,17 +167,14 @@ const Targets = () => {
                     <div className="flex justify-between text-xs mb-1">
                       <span className="font-medium">{progress}% Completed</span>
                       <span className="text-gray-500">
-                        {target.type === 'Premium'
-                          ? `${formatCurrency(Math.max(0, target.targetValue - target.achievedValue))} remaining`
-                          : `${Math.max(0, target.targetValue - target.achievedValue)} remaining`
-                        }
+                        {formatCurrency(Math.max(0, target.targetAmount - target.achievedAmount))} remaining
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className={`h-2.5 rounded-full ${isCompleted ? 'bg-green-600' :
-                            progress > 75 ? 'bg-blue-600' :
-                              progress > 40 ? 'bg-yellow-500' : 'bg-red-500'
+                          progress > 75 ? 'bg-blue-600' :
+                            progress > 40 ? 'bg-yellow-500' : 'bg-red-500'
                           }`}
                         style={{ width: `${progress}%` }}
                       ></div>
@@ -189,8 +183,8 @@ const Targets = () => {
 
                   <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
                     <span className={`px-2 py-1 rounded-full ${target.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        target.status === 'Employed' ? 'bg-red-100 text-red-800' : // Typo fallback
-                          target.status === 'Active' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'
+                      target.status === 'Expired' ? 'bg-red-100 text-red-800' :
+                        target.status === 'Active' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'
                       }`}>
                       {target.status}
                     </span>

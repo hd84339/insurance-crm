@@ -14,6 +14,7 @@ const reminderRoutes = require('./routes/reminderRoutes');
 const targetRoutes = require('./routes/targetRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
+const agentRoutes = require('./routes/agentRoutes');
 
 const app = express();
 connectDB();
@@ -54,6 +55,7 @@ app.use('/api/reminders', reminderRoutes);
 app.use('/api/targets', targetRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/agents', agentRoutes);
 
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Insurance & Mutual Fund CRM API', version: '1.0.0' });
