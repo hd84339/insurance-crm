@@ -1,10 +1,12 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, Grid, Users, Bell, FileText, Target, BarChart3, Search, User } from 'lucide-react';
+import useNotifications from '../hooks/useNotifications';
 
 const Layout = () => {
   const location = useLocation();
   const [user, setUser] = React.useState(null);
+  const { unreadCount } = useNotifications();
 
   const navigation = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -75,7 +77,11 @@ const Layout = () => {
           <div className="flex items-center gap-3">
             <Link to="/notifications" className="p-2 hover:bg-gray-100 rounded-lg relative">
               <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
             <Link to="/profile" className="p-1 hover:bg-gray-100 rounded-full transition-all overflow-hidden border border-transparent hover:border-blue-200">
               {user?.avatar ? (

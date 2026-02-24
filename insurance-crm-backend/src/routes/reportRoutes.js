@@ -8,6 +8,10 @@ const {
   generateClientActivityReport,
   getDashboardStats
 } = require('../controllers/reportController');
+const { protect } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 router.route('/policies')
   .get(generatePolicyReport);

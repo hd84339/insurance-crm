@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Client = require('../models/Client');
 const Policy = require('../models/Policy');
 const Claim = require('../models/Claim');
@@ -317,7 +318,11 @@ exports.getDashboardStats = async (req, res) => {
 
     // Premium stats
     const premiumStats = await Policy.aggregate([
-      { $match: matchQueryByAssigned },
+      {
+        $match: req.user.role === 'agent'
+          ? { assignedTo: new mongoose.Types.ObjectId(req.user.id) }
+          : {}
+      },
       {
         $group: {
           _id: null,
@@ -329,7 +334,11 @@ exports.getDashboardStats = async (req, res) => {
 
     // Claims stats
     const claimStats = await Claim.aggregate([
-      { $match: matchQueryByAssigned },
+      {
+        $match: req.user.role === 'agent'
+          ? { assignedTo: new mongoose.Types.ObjectId(req.user.id) }
+          : {}
+      },
       {
         $group: {
           _id: '$status',
@@ -372,6 +381,7 @@ exports.getDashboardStats = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('DASHBOARD_ERROR:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching dashboard statistics',

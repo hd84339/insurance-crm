@@ -27,6 +27,7 @@ import Tasks from "./pages/Tasks";
 import TaskForm from "./pages/TaskForm";
 import Users from "./pages/Users";
 import UserForm from "./pages/UserForm";
+import UserActivity from "./pages/UserActivity";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -105,6 +106,7 @@ function App() {
           <Route path="users" element={<Users />} />
           <Route path="users/new" element={<UserForm />} />
           <Route path="users/edit/:id" element={<UserForm />} />
+          <Route path="users/:id/activity" element={<UserActivity />} />
         </Route>
       </Routes>
     </Router>

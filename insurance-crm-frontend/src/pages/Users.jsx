@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Users as UsersIcon, UserPlus, Search, Filter,
-    Edit, Trash2, Mail, Phone, Shield, CheckCircle, XCircle
+    Edit, Trash2, Mail, Phone, Shield, CheckCircle, XCircle, Activity
 } from 'lucide-react';
 import { userAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -179,6 +179,13 @@ const Users = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link
+                                                    to={`/users/${user._id}/activity`}
+                                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                    title="Activity"
+                                                >
+                                                    <Activity className="w-5 h-5" />
+                                                </Link>
                                                 <Link
                                                     to={`/users/edit/${user._id}`}
                                                     className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

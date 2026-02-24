@@ -1,24 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Bell, AlertCircle, CheckCircle, Clock, Info, Check } from 'lucide-react';
-import toast from 'react-hot-toast';
+import useNotifications from '../hooks/useNotifications';
 
 const Notifications = () => {
-    const [notifications, setNotifications] = useState([
-        { id: 1, type: 'warning', title: 'Policy Renewal Due', message: 'Policy POL-001 for John Doe expires in 3 days.', time: '2 hours ago', read: false },
-        { id: 2, type: 'info', title: 'New Claim Assigned', message: 'Claim #CLM-2023-005 has been assigned to you.', time: '5 hours ago', read: false },
-        { id: 3, type: 'success', title: 'Target Achieved', message: 'Congratulations! You have achieved your monthly premium target.', time: '1 day ago', read: false },
-        { id: 4, type: 'warning', title: 'Meeting Reminder', message: 'Client meeting with Jane Smith at 3:00 PM today.', time: '1 day ago', read: true },
-        { id: 5, type: 'error', title: 'Payment Failed', message: 'Premium payment for Policy POL-089 failed. Please follow up.', time: '2 days ago', read: true },
-    ]);
-
-    const markAsRead = (id) => {
-        setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-    };
-
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
-        toast.success("All notifications marked as read");
-    };
+    const {
+        notifications,
+        unreadCount,
+        loading,
+        markAsRead,
+        markAllAsRead
+    } = useNotifications();
 
     const getIcon = (type) => {
         switch (type) {
@@ -29,7 +21,16 @@ const Notifications = () => {
         }
     };
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-12 text-center h-[50vh]">
+                <div className="space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-500 animate-pulse">Checking for notifications...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
@@ -59,8 +60,9 @@ const Notifications = () => {
                 ) : (
                     <div className="divide-y divide-gray-100">
                         {notifications.map(notification => (
-                            <div
+                            <Link
                                 key={notification.id}
+                                to={notification.link || '#'}
                                 className={`p-4 flex gap-4 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50/50' : ''}`}
                             >
                                 <div className={`flex-shrink-0 mt-1 p-2 rounded-full bg-white border shadow-sm`}>
@@ -85,7 +87,7 @@ const Notifications = () => {
                                         </button>
                                     )}
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

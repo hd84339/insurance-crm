@@ -245,7 +245,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         name="name"
-                                        value={user.name}
+                                        value={user.name || ''}
                                         onChange={handleChange}
                                         className="input-field mt-1 w-full"
                                     />
@@ -255,7 +255,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         name="role"
-                                        value={user.role}
+                                        value={user.role || ''}
                                         disabled
                                         className="input-field mt-1 w-full bg-gray-50 text-gray-500"
                                     />
@@ -265,7 +265,7 @@ const Profile = () => {
                                     <input
                                         type="email"
                                         name="email"
-                                        value={user.email}
+                                        value={user.email || ''}
                                         onChange={handleChange}
                                         className="input-field mt-1 w-full"
                                     />
@@ -275,7 +275,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         name="phone"
-                                        value={user.phone}
+                                        value={user.phone || ''}
                                         onChange={handleChange}
                                         className="input-field mt-1 w-full"
                                     />
@@ -287,7 +287,7 @@ const Profile = () => {
                                 <input
                                     type="text"
                                     name="location"
-                                    value={user.location}
+                                    value={user.location || ''}
                                     onChange={handleChange}
                                     className="input-field mt-1 w-full"
                                 />
@@ -298,7 +298,7 @@ const Profile = () => {
                                 <textarea
                                     name="bio"
                                     rows="4"
-                                    value={user.bio}
+                                    value={user.bio || ''}
                                     onChange={handleChange}
                                     className="input-field mt-1 w-full"
                                 ></textarea>
