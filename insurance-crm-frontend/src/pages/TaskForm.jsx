@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Save, X, Bell } from 'lucide-react';
-import { reminderAPI, clientAPI } from '../services/api';
+import { Save, X } from 'lucide-react';
+import { taskAPI, clientAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
-const ReminderForm = () => {
+const TaskForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -22,23 +22,23 @@ const ReminderForm = () => {
     useEffect(() => {
         loadClients();
         if (isEditMode) {
-            loadReminder();
+            loadTask();
         }
     }, [id]);
 
     const loadClients = async () => {
         try {
             const response = await clientAPI.getAll();
-            setClients(response.data.data);
+            setClients(response.data.data || []);
         } catch (error) {
             console.error("Failed to load clients");
         }
     };
 
-    const loadReminder = async () => {
+    const loadTask = async () => {
         try {
             setLoading(true);
-            const response = await reminderAPI.getById(id);
+            const response = await taskAPI.getById(id);
             const data = response.data.data;
 
             setValue('title', data.title);
@@ -50,8 +50,8 @@ const ReminderForm = () => {
             date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
             setValue('dueDate', date.toISOString().slice(0, 16));
         } catch (error) {
-            toast.error("Failed to load reminder");
-            navigate('/reminders');
+            toast.error("Failed to load task");
+            navigate('/tasks');
         } finally {
             setLoading(false);
         }
@@ -61,13 +61,13 @@ const ReminderForm = () => {
         try {
             setLoading(true);
             if (isEditMode) {
-                await reminderAPI.update(id, data);
-                toast.success("Reminder updated");
+                await taskAPI.update(id, data);
+                toast.success("Task updated");
             } else {
-                await reminderAPI.create(data);
-                toast.success("Reminder created");
+                await taskAPI.create(data);
+                toast.success("Task created");
             }
-            navigate('/reminders');
+            navigate('/tasks');
         } catch (error) {
             toast.error(isEditMode ? "Failed to update" : "Failed to create");
         } finally {
@@ -79,37 +79,37 @@ const ReminderForm = () => {
         <div className="max-w-xl mx-auto">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                    {isEditMode ? 'Edit Reminder' : 'New Reminder'}
+                    {isEditMode ? 'Edit Task' : 'New Task'}
                 </h2>
                 <button
-                    onClick={() => navigate('/reminders')}
-                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+                    onClick={() => navigate('/tasks')}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
                 >
                     <X className="w-6 h-6" />
                 </button>
             </div>
 
-            <div className="card">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                         <input
                             type="text"
                             {...register("title", { required: "Title is required" })}
-                            className="input-field mt-1 w-full"
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="e.g. Call client for renewal"
                         />
-                        {errors.title && <span className="text-red-500 text-xs">{errors.title.message}</span>}
+                        {errors.title && <span className="text-red-500 text-xs mt-1 block">{errors.title.message}</span>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Client Selection */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Related Client (Optional)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Related Client (Optional)</label>
                             <select
                                 {...register("client")}
-                                className="input-field mt-1 w-full"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
                             >
                                 <option value="">None</option>
                                 {clients.map(client => (
@@ -120,10 +120,10 @@ const ReminderForm = () => {
 
                         {/* Priority */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Priority</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                             <select
                                 {...register("priority")}
-                                className="input-field mt-1 w-full"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
                             >
                                 <option value="Low">Low</option>
                                 <option value="Medium">Medium</option>
@@ -134,22 +134,22 @@ const ReminderForm = () => {
 
                     {/* Due Date */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Due Date & Time</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Due Date & Time</label>
                         <input
                             type="datetime-local"
                             {...register("dueDate", { required: "Due date is required" })}
-                            className="input-field mt-1 w-full"
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${errors.dueDate ? 'border-red-500' : 'border-gray-300'}`}
                         />
-                        {errors.dueDate && <span className="text-red-500 text-xs">{errors.dueDate.message}</span>}
+                        {errors.dueDate && <span className="text-red-500 text-xs mt-1 block">{errors.dueDate.message}</span>}
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea
                             {...register("description")}
                             rows="3"
-                            className="input-field mt-1 w-full"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             placeholder="Additional details..."
                         />
                     </div>
@@ -157,18 +157,18 @@ const ReminderForm = () => {
                     <div className="flex justify-end gap-3 pt-4 border-t">
                         <button
                             type="button"
-                            onClick={() => navigate('/reminders')}
-                            className="btn-outline"
+                            onClick={() => navigate('/tasks')}
+                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="btn-primary flex items-center gap-2"
+                            className={`px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-all shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             <Save className="w-4 h-4" />
-                            {loading ? 'Saving...' : 'Save Reminder'}
+                            {loading ? 'Saving...' : 'Save Task'}
                         </button>
                     </div>
                 </form>
@@ -177,4 +177,4 @@ const ReminderForm = () => {
     );
 };
 
-export default ReminderForm;
+export default TaskForm;

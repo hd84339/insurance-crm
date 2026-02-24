@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -15,14 +16,25 @@ const userSchema = new mongoose.Schema({
         trim: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
     },
+    password: {
+        type: String,
+        required: [true, 'Password is required'],
+        minlength: [6, 'Password must be at least 6 characters'],
+        select: false
+    },
     phone: {
         type: String,
         match: [/^\+?[0-9\s\-()]{7,20}$/, 'Please provide a valid phone number']
     },
     role: {
         type: String,
-        enum: ['Administrator', 'Agent', 'Manager'],
-        default: 'Agent'
+        enum: ['admin', 'manager', 'agent'],
+        default: 'agent'
+    },
+    licenseNumber: {
+        type: String,
+        unique: true,
+        sparse: true
     },
     location: {
         type: String,
@@ -33,8 +45,12 @@ const userSchema = new mongoose.Schema({
         maxlength: [500, 'Bio cannot exceed 500 characters']
     },
     avatar: {
-        type: String, // Store the file path
+        type: String,
         default: null
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     },
     status: {
         type: String,
@@ -47,5 +63,19 @@ const userSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
+// Method to compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model('User', userSchema);

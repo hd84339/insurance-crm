@@ -9,6 +9,10 @@ const {
     uploadAvatar,
     deleteAvatar
 } = require('../controllers/userController');
+const { protect } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 // Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, '../../uploads/avatars');

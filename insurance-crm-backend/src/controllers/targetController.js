@@ -17,8 +17,13 @@ exports.getTargets = async (req, res) => {
 
     // Build query
     const query = {};
-    
-    if (agent) query.agent = agent;
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.agent = req.user.id;
+    } else if (agent) {
+      query.agent = agent;
+    }
     if (targetPeriod) query.targetPeriod = targetPeriod;
     if (productType) query.productType = productType;
     if (status) query.status = status;
@@ -66,6 +71,11 @@ exports.getTarget = async (req, res) => {
       });
     }
 
+    // Role-based access check
+    if (req.user.role === 'agent' && target.agent.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this target' });
+    }
+
     res.status(200).json({
       success: true,
       data: target
@@ -105,14 +115,7 @@ exports.createTarget = async (req, res) => {
 // @access  Private
 exports.updateTarget = async (req, res) => {
   try {
-    const target = await Target.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+    let target = await Target.findById(req.params.id);
 
     if (!target) {
       return res.status(404).json({
@@ -120,6 +123,20 @@ exports.updateTarget = async (req, res) => {
         message: 'Target not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && target.agent.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this target' });
+    }
+
+    target = await Target.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     res.status(200).json({
       success: true,
@@ -140,7 +157,7 @@ exports.updateTarget = async (req, res) => {
 // @access  Private
 exports.deleteTarget = async (req, res) => {
   try {
-    const target = await Target.findByIdAndDelete(req.params.id);
+    const target = await Target.findById(req.params.id);
 
     if (!target) {
       return res.status(404).json({
@@ -148,6 +165,13 @@ exports.deleteTarget = async (req, res) => {
         message: 'Target not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && target.agent.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this target' });
+    }
+
+    await Target.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -168,9 +192,14 @@ exports.deleteTarget = async (req, res) => {
 // @access  Private
 exports.getTargetStats = async (req, res) => {
   try {
+    const matchQuery = { status: 'Active' };
+    if (req.user.role === 'agent') {
+      matchQuery.agent = req.user._id;
+    }
+
     const stats = await Target.aggregate([
       {
-        $match: { status: 'Active' }
+        $match: matchQuery
       },
       {
         $group: {
@@ -180,8 +209,8 @@ exports.getTargetStats = async (req, res) => {
           totalAchievedAmount: { $sum: '$achievedAmount' },
           averageAchievement: { $avg: '$achievementPercentage' },
           achievedTargets: {
-            $sum: { 
-              $cond: [{ $gte: ['$achievementPercentage', 100] }, 1, 0] 
+            $sum: {
+              $cond: [{ $gte: ['$achievementPercentage', 100] }, 1, 0]
             }
           }
         }
@@ -219,7 +248,7 @@ exports.getTargetStats = async (req, res) => {
     // Top performers
     const topPerformers = await Target.aggregate([
       {
-        $match: { 
+        $match: {
           status: 'Active',
           achievementPercentage: { $gt: 0 }
         }
@@ -232,7 +261,7 @@ exports.getTargetStats = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'agents',
+          from: 'users',
           localField: 'agent',
           foreignField: '_id',
           as: 'agentInfo'
@@ -278,6 +307,11 @@ exports.getTargetStats = async (req, res) => {
 // @access  Private
 exports.getAgentActiveTargets = async (req, res) => {
   try {
+    // Role-based check
+    if (req.user.role === 'agent' && req.params.agentId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access these targets' });
+    }
+
     const targets = await Target.getActiveTargets(req.params.agentId);
 
     res.status(200).json({
@@ -301,10 +335,15 @@ exports.getAgentPerformance = async (req, res) => {
   try {
     const { period = 'Monthly' } = req.query;
 
+    // Role-based check
+    if (req.user.role === 'agent' && req.params.agentId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this performance summary' });
+    }
+
     const performance = await Target.aggregate([
       {
         $match: {
-          agent: req.params.agentId,
+          agent: new mongoose.Types.ObjectId(req.params.agentId),
           targetPeriod: period
         }
       },

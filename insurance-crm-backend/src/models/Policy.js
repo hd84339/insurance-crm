@@ -89,9 +89,13 @@ const policySchema = new mongoose.Schema({
       default: Date.now
     }
   }],
-  assignedAgent: {
+  assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agent'
+    ref: 'User'
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   commission: {
     percentage: Number,

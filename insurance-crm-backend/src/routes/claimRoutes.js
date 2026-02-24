@@ -10,6 +10,10 @@ const {
   getClaimStats,
   getPendingClaims
 } = require('../controllers/claimController');
+const { protect } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 router.route('/')
   .get(getClaims)

@@ -1,6 +1,6 @@
 const Claim = require('../models/Claim');
 const Policy = require('../models/Policy');
-const Agent = require('../models/Agent');
+const User = require('../models/User');
 
 // @desc    Get all claims
 // @route   GET /api/claims
@@ -34,7 +34,13 @@ exports.getClaims = async (req, res) => {
     if (priority) query.priority = priority;
     if (client) query.client = client;
     if (policy) query.policy = policy;
-    if (assignedTo) query.assignedTo = assignedTo;
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    } else if (req.query.assignedTo) {
+      query.assignedTo = req.query.assignedTo;
+    }
 
     // Execute query with pagination
     const claims = await Claim.find(query)
@@ -123,7 +129,12 @@ exports.createClaim = async (req, res) => {
       req.body.claimNumber = `CLM-${String(lastNumber + 1).padStart(6, '0')}`;
     }
 
-    const claim = await Claim.create(req.body);
+    const claimData = {
+      ...req.body,
+      createdBy: req.user.id
+    };
+
+    const claim = await Claim.create(claimData);
 
     res.status(201).json({
       success: true,
@@ -144,14 +155,7 @@ exports.createClaim = async (req, res) => {
 // @access  Private
 exports.updateClaim = async (req, res) => {
   try {
-    const claim = await Claim.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+    let claim = await Claim.findById(req.params.id);
 
     if (!claim) {
       return res.status(404).json({
@@ -159,6 +163,20 @@ exports.updateClaim = async (req, res) => {
         message: 'Claim not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && claim.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this claim' });
+    }
+
+    claim = await Claim.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     res.status(200).json({
       success: true,
@@ -190,13 +208,18 @@ exports.updateClaimStatus = async (req, res) => {
       });
     }
 
+    // Role-based access check
+    if (req.user.role === 'agent' && claim.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this claim' });
+    }
+
     claim.status = status;
 
     // Add to status history
     claim.statusHistory.push({
       status,
       note,
-      updatedBy,
+      updatedBy: req.user.id,
       date: new Date()
     });
 
@@ -226,7 +249,7 @@ exports.updateClaimStatus = async (req, res) => {
 // @access  Private
 exports.deleteClaim = async (req, res) => {
   try {
-    const claim = await Claim.findByIdAndDelete(req.params.id);
+    const claim = await Claim.findById(req.params.id);
 
     if (!claim) {
       return res.status(404).json({
@@ -234,6 +257,13 @@ exports.deleteClaim = async (req, res) => {
         message: 'Claim not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && claim.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this claim' });
+    }
+
+    await Claim.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -254,7 +284,15 @@ exports.deleteClaim = async (req, res) => {
 // @access  Private
 exports.getClaimStats = async (req, res) => {
   try {
+    const matchQuery = {};
+    if (req.user.role === 'agent') {
+      matchQuery.assignedTo = req.user._id;
+    }
+
     const stats = await Claim.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: null,
@@ -279,6 +317,9 @@ exports.getClaimStats = async (req, res) => {
 
     const statusBreakdown = await Claim.aggregate([
       {
+        $match: matchQuery
+      },
+      {
         $group: {
           _id: '$status',
           count: { $sum: 1 },
@@ -288,6 +329,9 @@ exports.getClaimStats = async (req, res) => {
     ]);
 
     const claimTypeBreakdown = await Claim.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: '$claimType',
@@ -301,7 +345,11 @@ exports.getClaimStats = async (req, res) => {
     // Average processing time for settled claims
     const processingTime = await Claim.aggregate([
       {
-        $match: { status: 'Settled', settlementDate: { $exists: true } }
+        $match: {
+          status: 'Settled',
+          settlementDate: { $exists: true },
+          ...matchQuery
+        }
       },
       {
         $project: {
@@ -344,9 +392,15 @@ exports.getClaimStats = async (req, res) => {
 // @access  Private
 exports.getPendingClaims = async (req, res) => {
   try {
-    const claims = await Claim.find({
+    const query = {
       status: { $in: ['Pending', 'Under Review'] }
-    })
+    };
+
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
+
+    const claims = await Claim.find(query)
       .populate('client', 'name phone')
       .populate('policy', 'policyNumber company')
       .sort('priority -claimDate');

@@ -10,6 +10,10 @@ const {
   getUpcomingRenewals,
   getMaturedPolicies
 } = require('../controllers/policyController');
+const { protect } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 router.route('/')
   .get(getPolicies)

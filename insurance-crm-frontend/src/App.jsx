@@ -17,13 +17,22 @@ import PolicyForm from "./pages/PolicyForm";
 import Claims from "./pages/Claims";
 import ClaimDetails from "./pages/ClaimDetails";
 import ClaimForm from "./pages/ClaimForm";
-import Reminders from "./pages/Reminders";
-import ReminderForm from "./pages/ReminderForm";
 import Targets from "./pages/Targets";
 import TargetForm from "./pages/TargetForm";
 import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
+import Login from "./pages/Login";
+import Tasks from "./pages/Tasks";
+import TaskForm from "./pages/TaskForm";
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 function App() {
   return (
@@ -58,7 +67,9 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="clients" element={<Clients />} />
@@ -75,9 +86,11 @@ function App() {
           <Route path="claims/new" element={<ClaimForm />} />
           <Route path="claims/edit/:id" element={<ClaimForm />} />
           <Route path="claims/:id" element={<ClaimDetails />} />
-          <Route path="reminders" element={<Reminders />} />
-          <Route path="reminders/new" element={<ReminderForm />} />
-          <Route path="reminders/edit/:id" element={<ReminderForm />} />
+
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="tasks/new" element={<TaskForm />} />
+          <Route path="tasks/edit/:id" element={<TaskForm />} />
+
           <Route path="targets" element={<Targets />} />
           <Route path="targets/new" element={<TargetForm />} />
           <Route path="targets/edit/:id" element={<TargetForm />} />

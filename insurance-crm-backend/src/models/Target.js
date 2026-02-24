@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const targetSchema = new mongoose.Schema({
   agent: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agent',
-    required: [true, 'Agent reference is required']
+    ref: 'User',
+    required: [true, 'User reference is required']
   },
   targetPeriod: {
     type: String,
@@ -137,7 +137,7 @@ targetSchema.statics.updateFromPolicy = async function (policy) {
 
   // Find active targets for the agent and period
   const targets = await this.find({
-    agent: policy.assignedAgent,
+    agent: policy.assignedTo,
     status: 'Active',
     startDate: { $lte: policy.createdAt },
     endDate: { $gte: policy.createdAt },

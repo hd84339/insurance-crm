@@ -7,18 +7,12 @@ const fs = require('fs').promises;
 // @access  Private
 exports.getProfile = async (req, res) => {
     try {
-        // For now, return a default user. In production, this would use req.user from auth middleware
-        let user = await User.findOne({ email: 'admin@insurance-crm.com' });
+        const user = await User.findById(req.user.id);
 
         if (!user) {
-            // Create default user if doesn't exist
-            user = await User.create({
-                name: 'Admin User',
-                email: 'admin@insurance-crm.com',
-                phone: '+91 98765 43210',
-                role: 'Administrator',
-                location: 'Mumbai, India',
-                bio: 'Senior Insurance Agent with 10+ years of experience in Life and Health insurance sectors.'
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
             });
         }
 
@@ -44,7 +38,7 @@ exports.updateProfile = async (req, res) => {
         const { name, email, phone, location, bio } = req.body;
 
         // For now, update the default user. In production, use req.user._id
-        let user = await User.findOne({ email: 'admin@insurance-crm.com' });
+        const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({
@@ -90,7 +84,7 @@ exports.uploadAvatar = async (req, res) => {
         }
 
         // For now, update the default user. In production, use req.user._id
-        let user = await User.findOne({ email: 'admin@insurance-crm.com' });
+        const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({
@@ -134,7 +128,7 @@ exports.uploadAvatar = async (req, res) => {
 exports.deleteAvatar = async (req, res) => {
     try {
         // For now, update the default user. In production, use req.user._id
-        let user = await User.findOne({ email: 'admin@insurance-crm.com' });
+        const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({

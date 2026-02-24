@@ -8,7 +8,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
-import { reportAPI, reminderAPI, policyAPI, claimAPI } from '../services/api';
+import { reportAPI, taskAPI, policyAPI, claimAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
@@ -22,7 +22,7 @@ const Dashboard = () => {
   });
   const [upcomingRenewals, setUpcomingRenewals] = useState([]);
   const [pendingClaims, setPendingClaims] = useState([]);
-  const [upcomingReminders, setUpcomingReminders] = useState([]);
+  const [upcomingTasks, setUpcomingTasks] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -41,13 +41,13 @@ const Dashboard = () => {
         reportAPI.getDashboard(),
         policyAPI.getUpcomingRenewals(30),
         claimAPI.getPending(),
-        reminderAPI.getUpcoming(7)
+        taskAPI.getUpcoming(7)
       ]);
 
       setStats(dashboardRes.data.data || {});
       setUpcomingRenewals(renewalsRes.data.data || []);
       setPendingClaims(claimsRes.data.data || []);
-      setUpcomingReminders(remindersRes.data.data || []);
+      setUpcomingTasks(remindersRes.data.data || []);
     } catch (error) {
       console.error("Error loading dashboard:", error);
       toast.error('Failed to load dashboard data. Using mock data for visualization.');
@@ -59,7 +59,7 @@ const Dashboard = () => {
           totalPremium: 1250000,
           pendingClaims: 3,
           targetAchievement: 68,
-          pendingReminders: 5,
+          pendingTasks: 5,
           upcomingRenewals: 12
         },
         monthlyGrowth: [
@@ -89,7 +89,7 @@ const Dashboard = () => {
       setPendingClaims([
         { _id: '1', client: { name: 'Alice Brown' }, amount: 50000, status: 'Processing' },
       ]);
-      setUpcomingReminders([
+      setUpcomingTasks([
         { _id: '1', title: 'Call for renewal', dueDate: '2023-11-10', priority: 'High', client: { name: 'Bob Wilson' } }
       ]);
     } finally {
@@ -167,8 +167,8 @@ const Dashboard = () => {
           subtext="Monthly Goal Progress"
         />
         <KpiCard
-          title="Pending Reminders"
-          value={stats.overview?.pendingReminders || upcomingReminders.length}
+          title="Pending Tasks"
+          value={stats.overview?.pendingTasks || upcomingTasks.length}
           icon={Bell}
           color="yellow"
           subtext="Tasks for today"
@@ -272,20 +272,20 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Today's Reminders Widget */}
+        {/* Today's Tasks Widget */}
         <div className="card col-span-1 lg:col-span-1">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Reminders</h3>
-            <Link to="/reminders" className="text-sm text-blue-600 hover:underline">View All</Link>
+            <h3 className="text-lg font-semibold text-gray-900">Tasks</h3>
+            <Link to="/tasks" className="text-sm text-blue-600 hover:underline">View All</Link>
           </div>
           <div className="space-y-3">
-            {upcomingReminders.slice(0, 5).map((reminder) => (
-              <div key={reminder._id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+            {upcomingTasks.slice(0, 5).map((task) => (
+              <div key={task._id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                 <div className="flex-1">
-                  <p className="font-medium text-sm text-gray-900">{reminder.title}</p>
+                  <p className="font-medium text-sm text-gray-900">{task.title}</p>
                   <p className="text-xs text-gray-500">
-                    {reminder.client?.name ? `${reminder.client.name} • ` : ''}
-                    {new Date(reminder.dueDate).toLocaleDateString()}
+                    {task.client?.name ? `${task.client.name} • ` : ''}
+                    {new Date(task.dueDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -298,7 +298,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {upcomingReminders.length === 0 && <p className="text-gray-500 text-sm text-center">No reminders.</p>}
+            {upcomingTasks.length === 0 && <p className="text-gray-500 text-sm text-center">No tasks.</p>}
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@ const Layout = () => {
     { path: '/clients', label: 'Clients', icon: Users },
     { path: '/policies', label: 'Policies', icon: Grid },
     { path: '/claims', label: 'Claims', icon: FileText },
-    { path: '/reminders', label: 'Reminders', icon: Bell },
+    { path: '/tasks', label: 'Tasks', icon: Bell },
     { path: '/targets', label: 'Targets', icon: Target },
     { path: '/reports', label: 'Reports', icon: BarChart3 },
   ];
@@ -31,6 +31,12 @@ const Layout = () => {
     } catch (error) {
       console.error('Failed to load user profile in layout:', error);
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
   };
 
   const getAvatarUrl = () => {
@@ -83,6 +89,15 @@ const Layout = () => {
                 </div>
               )}
             </Link>
+            <button
+              onClick={logout}
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+              title="Logout"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
         </div>
 

@@ -1,8 +1,9 @@
 const Client = require('../models/Client');
 const Policy = require('../models/Policy');
 const Claim = require('../models/Claim');
-const Reminder = require('../models/Reminder');
+const Task = require('../models/Task');
 const Target = require('../models/Target');
+const User = require('../models/User');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 
@@ -22,20 +23,25 @@ exports.generatePolicyReport = async (req, res) => {
 
     // Build query
     const query = {};
-    
+
     if (startDate || endDate) {
       query.createdAt = {};
       if (startDate) query.createdAt.$gte = new Date(startDate);
       if (endDate) query.createdAt.$lte = new Date(endDate);
     }
-    
+
     if (policyType) query.policyType = policyType;
     if (company) query.company = company;
     if (status) query.status = status;
 
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
+
     const policies = await Policy.find(query)
       .populate('client', 'name email phone')
-      .populate('assignedAgent', 'name')
+      .populate('assignedTo', 'name')
       .lean();
 
     const summary = {
@@ -82,15 +88,20 @@ exports.generateClaimReport = async (req, res) => {
 
     // Build query
     const query = {};
-    
+
     if (startDate || endDate) {
       query.claimDate = {};
       if (startDate) query.claimDate.$gte = new Date(startDate);
       if (endDate) query.claimDate.$lte = new Date(endDate);
     }
-    
+
     if (status) query.status = status;
     if (claimType) query.claimType = claimType;
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
 
     const claims = await Claim.find(query)
       .populate('client', 'name phone')
@@ -134,18 +145,25 @@ exports.generateClaimReport = async (req, res) => {
 exports.generateRenewalReport = async (req, res) => {
   try {
     const { days = 30, format = 'json' } = req.query;
-    
+
     const today = new Date();
     const futureDate = new Date();
     futureDate.setDate(today.getDate() + parseInt(days));
 
-    const policies = await Policy.find({
+    const query = {
       status: 'Active',
       renewalDate: {
         $gte: today,
         $lte: futureDate
       }
-    })
+    };
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
+
+    const policies = await Policy.find(query)
       .populate('client', 'name email phone')
       .sort('renewalDate')
       .lean();
@@ -187,12 +205,17 @@ exports.generateTargetReport = async (req, res) => {
     const { period, startDate, endDate, format = 'json' } = req.query;
 
     const query = {};
-    
+
     if (period) query.targetPeriod = period;
     if (startDate || endDate) {
       query.startDate = {};
       if (startDate) query.startDate.$gte = new Date(startDate);
       if (endDate) query.startDate.$lte = new Date(endDate);
+    }
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.agent = req.user.id;
     }
 
     const targets = await Target.find(query)
@@ -246,8 +269,13 @@ exports.generateClientActivityReport = async (req, res) => {
     const newPolicies = await Policy.countDocuments(dateQuery);
     const newClaims = await Claim.countDocuments(dateQuery);
 
-    const clients = await Client.find(dateQuery)
-      .populate('assignedAgent', 'name')
+    const matchQuery = { ...dateQuery };
+    if (req.user.role === 'agent') {
+      matchQuery.assignedTo = req.user.id;
+    }
+
+    const clients = await Client.find(matchQuery)
+      .populate('assignedTo', 'name')
       .lean();
 
     res.status(200).json({
@@ -277,13 +305,19 @@ exports.getDashboardStats = async (req, res) => {
     const today = new Date();
     const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
+    const matchQueryByAssigned = {};
+    if (req.user.role === 'agent') {
+      matchQueryByAssigned.assignedTo = req.user.id;
+    }
+
     // Overall stats
-    const totalClients = await Client.countDocuments();
-    const totalPolicies = await Policy.countDocuments();
-    const activePolicies = await Policy.countDocuments({ status: 'Active' });
-    
+    const totalClients = await Client.countDocuments(matchQueryByAssigned);
+    const totalPolicies = await Policy.countDocuments(matchQueryByAssigned);
+    const activePolicies = await Policy.countDocuments({ status: 'Active', ...matchQueryByAssigned });
+
     // Premium stats
     const premiumStats = await Policy.aggregate([
+      { $match: matchQueryByAssigned },
       {
         $group: {
           _id: null,
@@ -295,6 +329,7 @@ exports.getDashboardStats = async (req, res) => {
 
     // Claims stats
     const claimStats = await Claim.aggregate([
+      { $match: matchQueryByAssigned },
       {
         $group: {
           _id: '$status',
@@ -306,14 +341,15 @@ exports.getDashboardStats = async (req, res) => {
 
     // This month's activity
     const monthlyActivity = {
-      newClients: await Client.countDocuments({ createdAt: { $gte: thisMonth } }),
-      newPolicies: await Policy.countDocuments({ createdAt: { $gte: thisMonth } }),
-      newClaims: await Claim.countDocuments({ createdAt: { $gte: thisMonth } })
+      newClients: await Client.countDocuments({ createdAt: { $gte: thisMonth }, ...matchQueryByAssigned }),
+      newPolicies: await Policy.countDocuments({ createdAt: { $gte: thisMonth }, ...matchQueryByAssigned }),
+      newClaims: await Claim.countDocuments({ createdAt: { $gte: thisMonth }, ...matchQueryByAssigned })
     };
 
-    // Upcoming reminders
-    const upcomingReminders = await Reminder.countDocuments({
+    // Upcoming tasks
+    const upcomingTasks = await Task.countDocuments({
       status: 'Pending',
+      assignedTo: req.user.id, // Tasks are always personal
       dueDate: {
         $gte: today,
         $lte: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
@@ -332,7 +368,7 @@ exports.getDashboardStats = async (req, res) => {
         },
         claims: claimStats,
         monthlyActivity,
-        upcomingReminders
+        upcomingTasks
       }
     });
   } catch (error) {
@@ -442,7 +478,7 @@ exports.generateRenewalExcel = async (policies, summary, res) => {
   policies.forEach(policy => {
     const renewalDate = new Date(policy.renewalDate);
     const daysUntil = Math.ceil((renewalDate - today) / (1000 * 60 * 60 * 24));
-    
+
     worksheet.addRow({
       policyNumber: policy.policyNumber,
       clientName: policy.client?.name || 'N/A',

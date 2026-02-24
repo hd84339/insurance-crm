@@ -72,18 +72,18 @@ export const claimAPI = {
   getPending: () => api.get('/claims/pending/list'),
 };
 
-// Reminder API
-export const reminderAPI = {
-  getAll: (params) => api.get('/reminders', { params }),
-  getById: (id) => api.get(`/reminders/${id}`),
-  create: (data) => api.post('/reminders', data),
-  update: (id, data) => api.put(`/reminders/${id}`, data),
-  complete: (id, agentId) => api.patch(`/reminders/${id}/complete`, { agentId }),
-  snooze: (id, days) => api.patch(`/reminders/${id}/snooze`, { days }),
-  delete: (id) => api.delete(`/reminders/${id}`),
-  getStats: () => api.get('/reminders/stats/overview'),
-  getUpcoming: (days = 7) => api.get(`/reminders/upcoming/${days}`),
-  getOverdue: () => api.get('/reminders/overdue/list'),
+// Task API (Renamed from Reminder)
+export const taskAPI = {
+  getAll: (params) => api.get('/tasks', { params }),
+  getById: (id) => api.get(`/tasks/${id}`),
+  create: (data) => api.post('/tasks', data),
+  update: (id, data) => api.put(`/tasks/${id}`, data),
+  complete: (id) => api.patch(`/tasks/${id}/complete`),
+  snooze: (id, days) => api.patch(`/tasks/${id}/snooze`, { days }),
+  delete: (id) => api.delete(`/tasks/${id}`),
+  getStats: () => api.get('/tasks/stats/overview'),
+  getUpcoming: (days = 7) => api.get(`/tasks/upcoming/${days}`),
+  getOverdue: () => api.get('/tasks/overdue/list'),
 };
 
 // Target API
@@ -108,13 +108,16 @@ export const reportAPI = {
   getClientActivity: (params) => api.get('/reports/client-activity', { params }),
 };
 
-// Agent API
-export const agentAPI = {
-  getAll: () => api.get('/agents'),
+// Auth API
+export const authAPI = {
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (data) => api.post('/auth/register', data),
+  getMe: () => api.get('/auth/me'),
 };
 
 // User API
 export const userAPI = {
+  getAll: (params) => api.get('/users', { params }),
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.put('/users/profile', data),
   uploadAvatar: (formData) => {

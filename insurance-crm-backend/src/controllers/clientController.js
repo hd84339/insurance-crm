@@ -1,6 +1,6 @@
 const Client = require('../models/Client');
 const Policy = require('../models/Policy');
-const Agent = require('../models/Agent');
+const User = require('../models/User');
 
 // @desc    Get all clients
 // @route   GET /api/clients
@@ -32,11 +32,17 @@ exports.getClients = async (req, res) => {
     if (status) query.status = status;
     if (clientType) query.clientType = clientType;
     if (priority) query.priority = priority;
-    if (assignedAgent) query.assignedAgent = assignedAgent;
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    } else if (req.query.assignedTo) {
+      query.assignedTo = req.query.assignedTo;
+    }
 
     // Execute query with pagination
     const clients = await Client.find(query)
-      .populate('assignedAgent', 'name email')
+      .populate('assignedTo', 'name email')
       .sort(sortBy)
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -68,7 +74,7 @@ exports.getClients = async (req, res) => {
 exports.getClient = async (req, res) => {
   try {
     const client = await Client.findById(req.params.id)
-      .populate('assignedAgent', 'name email phone')
+      .populate('assignedTo', 'name email phone')
       .populate({
         path: 'policies',
         select: 'policyNumber policyType company premiumAmount status'
@@ -79,6 +85,11 @@ exports.getClient = async (req, res) => {
         success: false,
         message: 'Client not found'
       });
+    }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && client.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this client' });
     }
 
     res.status(200).json({
@@ -99,7 +110,11 @@ exports.getClient = async (req, res) => {
 // @access  Private
 exports.createClient = async (req, res) => {
   try {
-    const client = await Client.create(req.body);
+    const clientData = {
+      ...req.body,
+      createdBy: req.user.id
+    };
+    const client = await Client.create(clientData);
 
     res.status(201).json({
       success: true,
@@ -120,14 +135,7 @@ exports.createClient = async (req, res) => {
 // @access  Private
 exports.updateClient = async (req, res) => {
   try {
-    const client = await Client.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+    let client = await Client.findById(req.params.id);
 
     if (!client) {
       return res.status(404).json({
@@ -135,6 +143,20 @@ exports.updateClient = async (req, res) => {
         message: 'Client not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && client.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this client' });
+    }
+
+    client = await Client.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     res.status(200).json({
       success: true,
@@ -155,6 +177,20 @@ exports.updateClient = async (req, res) => {
 // @access  Private
 exports.deleteClient = async (req, res) => {
   try {
+    const client = await Client.findById(req.params.id);
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found'
+      });
+    }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && client.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this client' });
+    }
+
     // Check if client has active policies
     const activePolicies = await Policy.countDocuments({
       client: req.params.id,
@@ -168,14 +204,7 @@ exports.deleteClient = async (req, res) => {
       });
     }
 
-    const client = await Client.findByIdAndDelete(req.params.id);
-
-    if (!client) {
-      return res.status(404).json({
-        success: false,
-        message: 'Client not found'
-      });
-    }
+    await Client.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -196,7 +225,15 @@ exports.deleteClient = async (req, res) => {
 // @access  Private
 exports.getClientStats = async (req, res) => {
   try {
+    const matchQuery = {};
+    if (req.user.role === 'agent') {
+      matchQuery.assignedTo = req.user._id;
+    }
+
     const stats = await Client.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: null,
@@ -214,6 +251,9 @@ exports.getClientStats = async (req, res) => {
     ]);
 
     const statusBreakdown = await Client.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: '$status',

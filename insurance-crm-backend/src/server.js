@@ -10,14 +10,17 @@ const connectDB = require('./config/database');
 const clientRoutes = require('./routes/clientRoutes');
 const policyRoutes = require('./routes/policyRoutes');
 const claimRoutes = require('./routes/claimRoutes');
-const reminderRoutes = require('./routes/reminderRoutes');
+const taskRoutes = require('./routes/taskRoutes');
 const targetRoutes = require('./routes/targetRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
-const agentRoutes = require('./routes/agentRoutes');
+const authRoutes = require('./routes/authRoutes');
+const seedAdmin = require('./utils/seeder');
 
 const app = express();
-connectDB();
+connectDB().then(() => {
+  seedAdmin();
+});
 
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -77,11 +80,11 @@ app.get('/health', (req, res) => {
 app.use('/api/clients', clientRoutes);
 app.use('/api/policies', policyRoutes);
 app.use('/api/claims', claimRoutes);
-app.use('/api/reminders', reminderRoutes);
+app.use('/api/tasks', taskRoutes);
 app.use('/api/targets', targetRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/agents', agentRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Insurance & Mutual Fund CRM API', version: '1.0.0' });

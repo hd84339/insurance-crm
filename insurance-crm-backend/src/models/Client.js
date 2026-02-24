@@ -53,9 +53,13 @@ const clientSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  assignedAgent: {
+  assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agent'
+    ref: 'User'
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   totalPolicies: {
     type: Number,
@@ -97,7 +101,7 @@ clientSchema.virtual('policies', {
 
 // Indexes for better query performance
 clientSchema.index({ name: 'text', email: 'text', phone: 'text' });
-clientSchema.index({ assignedAgent: 1, status: 1 });
+clientSchema.index({ assignedTo: 1, status: 1 });
 clientSchema.index({ createdAt: -1 });
 
 // Pre-save middleware to update statistics

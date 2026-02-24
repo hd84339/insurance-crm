@@ -10,10 +10,14 @@ const {
   getAgentActiveTargets,
   getAgentPerformance
 } = require('../controllers/targetController');
+const { protect, authorize } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 router.route('/')
   .get(getTargets)
-  .post(createTarget);
+  .post(authorize('admin', 'manager'), createTarget);
 
 router.route('/stats/overview')
   .get(getTargetStats);
@@ -26,7 +30,7 @@ router.route('/agent/:agentId/performance')
 
 router.route('/:id')
   .get(getTarget)
-  .put(updateTarget)
-  .delete(deleteTarget);
+  .put(authorize('admin', 'manager'), updateTarget)
+  .delete(authorize('admin', 'manager'), deleteTarget);
 
 module.exports = router;

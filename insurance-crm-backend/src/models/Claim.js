@@ -52,7 +52,11 @@ const claimSchema = new mongoose.Schema({
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agent'
+    ref: 'User'
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   description: {
     type: String,
@@ -77,7 +81,7 @@ const claimSchema = new mongoose.Schema({
     note: String,
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Agent'
+      ref: 'User'
     }
   }],
   rejectionReason: {

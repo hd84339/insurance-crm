@@ -9,6 +9,10 @@ const {
   getClientStats,
   getClientPolicies
 } = require('../controllers/clientController');
+const { protect } = require('../middleware/auth');
+
+// Apply protection to all routes
+router.use(protect);
 
 router.route('/')
   .get(getClients)

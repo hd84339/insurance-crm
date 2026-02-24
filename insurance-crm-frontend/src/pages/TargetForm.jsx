@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Save, X, Target } from 'lucide-react';
-import { targetAPI, agentAPI } from '../services/api';
+import { targetAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const TargetForm = () => {
@@ -31,7 +31,7 @@ const TargetForm = () => {
 
     const loadAgents = async () => {
         try {
-            const response = await agentAPI.getAll();
+            const response = await userAPI.getAll();
             setAgents(response.data.data || []);
         } catch (error) {
             console.error("Failed to load agents", error);

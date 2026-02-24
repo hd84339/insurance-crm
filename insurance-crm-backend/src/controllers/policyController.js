@@ -1,7 +1,7 @@
 const Policy = require('../models/Policy');
 const Client = require('../models/Client');
 const Target = require('../models/Target');
-const Agent = require('../models/Agent');
+const User = require('../models/User');
 
 // @desc    Get all policies
 // @route   GET /api/policies
@@ -36,12 +36,18 @@ exports.getPolicies = async (req, res) => {
     if (status) query.status = status;
     if (paymentStatus) query.paymentStatus = paymentStatus;
     if (client) query.client = client;
-    if (assignedAgent) query.assignedAgent = assignedAgent;
+
+    // Role-based filtering
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    } else if (req.query.assignedTo) {
+      query.assignedTo = req.query.assignedTo;
+    }
 
     // Execute query with pagination
     const policies = await Policy.find(query)
       .populate('client', 'name email phone')
-      .populate('assignedAgent', 'name email')
+      .populate('assignedTo', 'name email')
       .sort(sortBy)
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -74,7 +80,7 @@ exports.getPolicy = async (req, res) => {
   try {
     const policy = await Policy.findById(req.params.id)
       .populate('client', 'name email phone address')
-      .populate('assignedAgent', 'name email phone');
+      .populate('assignedTo', 'name email phone');
 
     if (!policy) {
       return res.status(404).json({
@@ -110,10 +116,15 @@ exports.createPolicy = async (req, res) => {
       });
     }
 
-    const policy = await Policy.create(req.body);
+    const policyData = {
+      ...req.body,
+      createdBy: req.user.id
+    };
+    const policy = await Policy.create(policyData);
 
-    // Update targets if agent is assigned
-    if (policy.assignedAgent) {
+    // Update targets if assigned
+    if (policy.assignedTo) {
+      // Assuming Target.updateFromPolicy works with User ref
       await Target.updateFromPolicy(policy);
     }
 
@@ -136,14 +147,7 @@ exports.createPolicy = async (req, res) => {
 // @access  Private
 exports.updatePolicy = async (req, res) => {
   try {
-    const policy = await Policy.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+    let policy = await Policy.findById(req.params.id);
 
     if (!policy) {
       return res.status(404).json({
@@ -151,6 +155,20 @@ exports.updatePolicy = async (req, res) => {
         message: 'Policy not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && policy.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update this policy' });
+    }
+
+    policy = await Policy.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     res.status(200).json({
       success: true,
@@ -171,7 +189,7 @@ exports.updatePolicy = async (req, res) => {
 // @access  Private
 exports.deletePolicy = async (req, res) => {
   try {
-    const policy = await Policy.findByIdAndDelete(req.params.id);
+    const policy = await Policy.findById(req.params.id);
 
     if (!policy) {
       return res.status(404).json({
@@ -179,6 +197,13 @@ exports.deletePolicy = async (req, res) => {
         message: 'Policy not found'
       });
     }
+
+    // Role-based access check
+    if (req.user.role === 'agent' && policy.assignedTo.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this policy' });
+    }
+
+    await Policy.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -199,7 +224,15 @@ exports.deletePolicy = async (req, res) => {
 // @access  Private
 exports.getPolicyStats = async (req, res) => {
   try {
+    const matchQuery = {};
+    if (req.user.role === 'agent') {
+      matchQuery.assignedTo = req.user._id;
+    }
+
     const stats = await Policy.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: null,
@@ -215,6 +248,9 @@ exports.getPolicyStats = async (req, res) => {
 
     const policyTypeBreakdown = await Policy.aggregate([
       {
+        $match: matchQuery
+      },
+      {
         $group: {
           _id: '$policyType',
           count: { $sum: 1 },
@@ -226,6 +262,9 @@ exports.getPolicyStats = async (req, res) => {
 
     const companyBreakdown = await Policy.aggregate([
       {
+        $match: matchQuery
+      },
+      {
         $group: {
           _id: '$company',
           count: { $sum: 1 },
@@ -236,6 +275,9 @@ exports.getPolicyStats = async (req, res) => {
     ]);
 
     const statusBreakdown = await Policy.aggregate([
+      {
+        $match: matchQuery
+      },
       {
         $group: {
           _id: '$status',
@@ -272,13 +314,19 @@ exports.getUpcomingRenewals = async (req, res) => {
     const futureDate = new Date();
     futureDate.setDate(today.getDate() + parseInt(days));
 
-    const policies = await Policy.find({
+    const query = {
       status: 'Active',
       renewalDate: {
         $gte: today,
         $lte: futureDate
       }
-    })
+    };
+
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
+
+    const policies = await Policy.find(query)
       .populate('client', 'name email phone')
       .sort('renewalDate');
 
@@ -301,9 +349,12 @@ exports.getUpcomingRenewals = async (req, res) => {
 // @access  Private
 exports.getMaturedPolicies = async (req, res) => {
   try {
-    const policies = await Policy.find({
-      status: 'Matured'
-    })
+    const query = { status: 'Matured' };
+    if (req.user.role === 'agent') {
+      query.assignedTo = req.user.id;
+    }
+
+    const policies = await Policy.find(query)
       .populate('client', 'name email phone')
       .sort('-maturityDate');
 
