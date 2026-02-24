@@ -7,9 +7,14 @@ const {
     getProfile,
     updateProfile,
     uploadAvatar,
-    deleteAvatar
+    deleteAvatar,
+    getUsers,
+    createUser,
+    getUserById,
+    updateUser,
+    deleteUser
 } = require('../controllers/userController');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 // Apply protection to all routes
 router.use(protect);
@@ -53,5 +58,15 @@ router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
 router.post('/profile/avatar', upload.single('avatar'), uploadAvatar);
 router.delete('/profile/avatar', deleteAvatar);
+
+// Admin Management Routes
+router.route('/')
+    .get(authorize('admin', 'manager'), getUsers)
+    .post(authorize('admin'), createUser);
+
+router.route('/:id')
+    .get(authorize('admin', 'manager'), getUserById)
+    .put(authorize('admin'), updateUser)
+    .delete(authorize('admin'), deleteUser);
 
 module.exports = router;

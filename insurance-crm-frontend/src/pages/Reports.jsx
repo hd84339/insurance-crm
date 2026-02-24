@@ -8,29 +8,11 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Mock Data for Reports (Since API aggregated reports might be complex to implement fully without backend)
+// Mock Data for Reports - Cleared as requested by user
 const MOCK_DATA = {
-  policyGrowth: [
-    { name: 'Jan', life: 40, health: 24, motor: 24 },
-    { name: 'Feb', life: 30, health: 13, motor: 22 },
-    { name: 'Mar', life: 20, health: 58, motor: 22 },
-    { name: 'Apr', life: 27, health: 39, motor: 20 },
-    { name: 'May', life: 18, health: 48, motor: 21 },
-    { name: 'Jun', life: 23, health: 38, motor: 25 },
-  ],
-  claimsStatus: [
-    { name: 'Approved', value: 400 },
-    { name: 'Pending', value: 300 },
-    { name: 'Rejected', value: 300 },
-    { name: 'Processing', value: 200 },
-  ],
-  agentPerformance: [
-    { name: 'Agent A', sales: 4000 },
-    { name: 'Agent B', sales: 3000 },
-    { name: 'Agent C', sales: 2000 },
-    { name: 'Agent D', sales: 2780 },
-    { name: 'Agent E', sales: 1890 },
-  ]
+  policyGrowth: [],
+  claimsStatus: [],
+  agentPerformance: []
 };
 
 const Reports = () => {

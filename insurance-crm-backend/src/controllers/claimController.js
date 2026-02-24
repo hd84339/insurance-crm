@@ -90,6 +90,11 @@ exports.getClaim = async (req, res) => {
       });
     }
 
+    // Role-based access check
+    if (req.user.role === 'agent' && claim.assignedTo && claim.assignedTo._id.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this claim' });
+    }
+
     res.status(200).json({
       success: true,
       data: claim
@@ -133,6 +138,11 @@ exports.createClaim = async (req, res) => {
       ...req.body,
       createdBy: req.user.id
     };
+
+    // If agent is creating and didn't specify assignedTo, default to themselves
+    if (req.user.role === 'agent' && !claimData.assignedTo) {
+      claimData.assignedTo = req.user.id;
+    }
 
     const claim = await Claim.create(claimData);
 

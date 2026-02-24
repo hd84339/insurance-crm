@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Mail, Phone, MapPin, Save, Camera, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Camera, Trash2, Lock, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { userAPI } from '../services/api';
 
@@ -14,6 +14,10 @@ const Profile = () => {
         location: '',
         bio: '',
         avatar: null
+    });
+    const [passwords, setPasswords] = useState({
+        newPassword: '',
+        confirmPassword: ''
     });
     const [showModal, setShowModal] = useState(false);
     const fileInputRef = useRef(null);
@@ -53,6 +57,27 @@ const Profile = () => {
         } catch (error) {
             console.error('Update error:', error);
             toast.error(error.response?.data?.message || "Failed to update profile");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (!passwords.newPassword) return;
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            return toast.error("Passwords do not match");
+        }
+
+        setLoading(true);
+        try {
+            await userAPI.updateProfile({
+                password: passwords.newPassword
+            });
+            setPasswords({ newPassword: '', confirmPassword: '' });
+            toast.success("Password updated successfully");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update password");
         } finally {
             setLoading(false);
         }
@@ -287,6 +312,52 @@ const Profile = () => {
                                 >
                                     <Save className="w-4 h-4" />
                                     {loading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div className="card mt-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-red-600" />
+                            Security & Password
+                        </h3>
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">New Password</label>
+                                    <div className="relative mt-1">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            value={passwords.newPassword}
+                                            onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                                            className="input-field w-full pl-10"
+                                            placeholder="••••••••"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                                    <div className="relative mt-1">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            value={passwords.confirmPassword}
+                                            onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                                            className="input-field w-full pl-10"
+                                            placeholder="••••••••"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex justify-end pt-4 border-t">
+                                <button
+                                    type="submit"
+                                    disabled={loading || !passwords.newPassword}
+                                    className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50"
+                                >
+                                    Update Password
                                 </button>
                             </div>
                         </form>

@@ -175,6 +175,7 @@ const Claims = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -212,6 +213,9 @@ const Claims = () => {
                         {claim.priority}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {claim.assignedTo?.name || <span className="text-gray-400 italic text-xs">Unassigned</span>}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <Link to={`/claims/${claim._id}`} className="p-1 hover:bg-gray-100 rounded text-gray-600" title="View">
@@ -232,7 +236,7 @@ const Claims = () => {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

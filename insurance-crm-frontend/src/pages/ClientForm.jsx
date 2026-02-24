@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
-import { clientAPI } from "../services/api";
+import { clientAPI, userAPI } from "../services/api";
 import toast from "react-hot-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, User } from "lucide-react";
 
 const ClientForm = () => {
   const navigate = useNavigate();
@@ -16,14 +16,26 @@ const ClientForm = () => {
     occupation: "",
     clientType: "Individual",
     status: "Active",
+    assignedTo: "",
   });
+  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    loadAgents();
     if (id) {
       loadClient();
     }
   }, [id]);
+
+  const loadAgents = async () => {
+    try {
+      const response = await userAPI.getAll();
+      setAgents(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to load agents", error);
+    }
+  };
 
   const loadClient = async () => {
     try {
@@ -42,6 +54,7 @@ const ClientForm = () => {
         occupation: client.occupation || "",
         clientType: client.clientType || "Individual",
         status: client.status || "Active",
+        assignedTo: client.assignedTo?._id || client.assignedTo || "",
       });
     } catch (error) {
       toast.error("Failed to load client details");
@@ -194,6 +207,26 @@ const ClientForm = () => {
                 <option value="Inactive">Inactive</option>
                 <option value="Prospect">Prospect</option>
               </select>
+            </div>
+
+            <div>
+              <label className="label">Assigned Agent</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  name="assignedTo"
+                  value={form.assignedTo}
+                  onChange={handleChange}
+                  className="input-field w-full pl-10"
+                >
+                  <option value="">Search or select agent...</option>
+                  {agents.map(agent => (
+                    <option key={agent._id} value={agent._id}>
+                      {agent.name} ({agent.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Save, X, Search, FileText } from 'lucide-react';
-import { claimAPI, policyAPI, clientAPI } from '../services/api';
+import { claimAPI, policyAPI, clientAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { Save, X, Search, FileText, User as UserIcon } from 'lucide-react';
 
 const ClaimForm = () => {
     const { id } = useParams();
@@ -13,12 +13,14 @@ const ClaimForm = () => {
     const [clients, setClients] = useState([]);
     const [policies, setPolicies] = useState([]);
     const [selectedClient, setSelectedClient] = useState("");
+    const [agents, setAgents] = useState([]);
 
     const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
         defaultValues: {
             priority: 'Medium',
             status: 'Pending',
-            date: new Date().toISOString().split('T')[0]
+            date: new Date().toISOString().split('T')[0],
+            assignedTo: ''
         }
     });
 
@@ -26,10 +28,20 @@ const ClaimForm = () => {
 
     useEffect(() => {
         loadClients();
+        loadAgents();
         if (isEditMode) {
             loadClaim();
         }
     }, [id]);
+
+    const loadAgents = async () => {
+        try {
+            const response = await userAPI.getAll();
+            setAgents(response.data.data || []);
+        } catch (error) {
+            console.error("Failed to load agents", error);
+        }
+    };
 
     useEffect(() => {
         if (watchClient) {
@@ -78,6 +90,7 @@ const ClaimForm = () => {
             setValue('priority', data.priority);
             setValue('status', data.status);
             setValue('date', data.date.split('T')[0]);
+            setValue('assignedTo', data.assignedTo?._id || data.assignedTo || '');
         } catch (error) {
             toast.error("Failed to load claim details");
             navigate('/claims');
@@ -216,6 +229,25 @@ const ClaimForm = () => {
                                 <option value="Approved">Approved</option>
                                 <option value="Rejected">Rejected</option>
                             </select>
+                        </div>
+
+                        {/* Assigned To */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Assigned Agent</label>
+                            <div className="relative mt-1">
+                                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <select
+                                    {...register("assignedTo")}
+                                    className="input-field w-full pl-10"
+                                >
+                                    <option value="">Select Agent</option>
+                                    {agents.map(agent => (
+                                        <option key={agent._id} value={agent._id}>
+                                            {agent.name} ({agent.role})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
 

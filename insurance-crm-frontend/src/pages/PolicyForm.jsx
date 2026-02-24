@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Save, X, Search, User, FileText, Calendar, DollarSign, Briefcase } from "lucide-react";
-import { policyAPI, clientAPI } from "../services/api";
+import { ArrowLeft, Save, X, Search, User, FileText, Calendar, DollarSign, Briefcase, Shield } from "lucide-react";
+import { policyAPI, clientAPI, userAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 const PolicyForm = () => {
@@ -25,10 +25,12 @@ const PolicyForm = () => {
         nextPremiumDue: "",
         status: "Active",
         paymentStatus: "Pending",
-        notes: ""
+        notes: "",
+        assignedTo: ""
     });
 
     const [clients, setClients] = useState([]);
+    const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [clientSearch, setClientSearch] = useState("");
@@ -38,7 +40,17 @@ const PolicyForm = () => {
             loadPolicy();
         }
         loadClients();
+        loadAgents();
     }, [id]);
+
+    const loadAgents = async () => {
+        try {
+            const response = await userAPI.getAll();
+            setAgents(response.data.data || []);
+        } catch (error) {
+            console.error("Failed to load agents", error);
+        }
+    };
 
     const loadPolicy = async () => {
         try {
@@ -58,7 +70,8 @@ const PolicyForm = () => {
                 startDate: formatDate(data.startDate),
                 maturityDate: formatDate(data.maturityDate),
                 renewalDate: formatDate(data.renewalDate),
-                nextPremiumDue: formatDate(data.nextPremiumDue)
+                nextPremiumDue: formatDate(data.nextPremiumDue),
+                assignedTo: data.assignedTo?._id || data.assignedTo || ""
             });
 
             if (data.client?.name) {
@@ -250,7 +263,7 @@ const PolicyForm = () => {
                             </select>
                         </div>
 
-                        <div className="md:col-span-2 space-y-1">
+                        <div className="md:col-span-1 space-y-1">
                             <label className="block text-sm font-medium text-gray-700">Plan Name *</label>
                             <input
                                 type="text"
@@ -261,6 +274,26 @@ const PolicyForm = () => {
                                 required
                                 placeholder="e.g. Jeevan Anand, Smart Shield, etc."
                             />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-gray-700">Assigned Agent</label>
+                            <div className="relative">
+                                <Shield className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <select
+                                    name="assignedTo"
+                                    value={formData.assignedTo}
+                                    onChange={handleChange}
+                                    className="pl-10 input-field w-full"
+                                >
+                                    <option value="">Select agent...</option>
+                                    {agents.map(agent => (
+                                        <option key={agent._id} value={agent._id}>
+                                            {agent.name} ({agent.role})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -424,8 +457,8 @@ const PolicyForm = () => {
                         {saving ? "Saving..." : (isEdit ? "Update Policy" : "Save Policy")}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 };
 

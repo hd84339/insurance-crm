@@ -114,6 +114,12 @@ exports.createClient = async (req, res) => {
       ...req.body,
       createdBy: req.user.id
     };
+
+    // If agent is creating and didn't specify assignedTo, default to themselves
+    if (req.user.role === 'agent' && !clientData.assignedTo) {
+      clientData.assignedTo = req.user.id;
+    }
+
     const client = await Client.create(clientData);
 
     res.status(201).json({

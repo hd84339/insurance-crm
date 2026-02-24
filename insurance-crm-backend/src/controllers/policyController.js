@@ -89,6 +89,11 @@ exports.getPolicy = async (req, res) => {
       });
     }
 
+    // Role-based access check
+    if (req.user.role === 'agent' && policy.assignedTo && policy.assignedTo._id.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this policy' });
+    }
+
     res.status(200).json({
       success: true,
       data: policy
@@ -120,6 +125,12 @@ exports.createPolicy = async (req, res) => {
       ...req.body,
       createdBy: req.user.id
     };
+
+    // If agent is creating and didn't specify assignedTo, default to themselves
+    if (req.user.role === 'agent' && !policyData.assignedTo) {
+      policyData.assignedTo = req.user.id;
+    }
+
     const policy = await Policy.create(policyData);
 
     // Update targets if assigned

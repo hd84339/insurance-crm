@@ -4,6 +4,7 @@ import { Home, Grid, Users, Bell, FileText, Target, BarChart3, Search, User } fr
 
 const Layout = () => {
   const location = useLocation();
+  const [user, setUser] = React.useState(null);
 
   const navigation = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -11,11 +12,15 @@ const Layout = () => {
     { path: '/policies', label: 'Policies', icon: Grid },
     { path: '/claims', label: 'Claims', icon: FileText },
     { path: '/tasks', label: 'Tasks', icon: Bell },
-    { path: '/targets', label: 'Targets', icon: Target },
-    { path: '/reports', label: 'Reports', icon: BarChart3 },
   ];
 
-  const [user, setUser] = React.useState(null);
+  // Only show these to admin/manager
+  if (user?.role === 'admin' || user?.role === 'manager') {
+    navigation.push({ path: '/targets', label: 'Targets', icon: Target });
+    navigation.push({ path: '/users', label: 'Users', icon: User });
+  }
+
+  navigation.push({ path: '/reports', label: 'Reports', icon: BarChart3 });
 
   React.useEffect(() => {
     loadUserProfile();

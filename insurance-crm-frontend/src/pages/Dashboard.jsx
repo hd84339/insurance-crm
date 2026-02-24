@@ -50,48 +50,24 @@ const Dashboard = () => {
       setUpcomingTasks(remindersRes.data.data || []);
     } catch (error) {
       console.error("Error loading dashboard:", error);
-      toast.error('Failed to load dashboard data. Using mock data for visualization.');
-      // Fallback/Mock data for demonstration if API fails or is empty
-      setStats({
-        overview: {
-          totalClients: 124,
-          activePolicies: 85,
-          totalPremium: 1250000,
-          pendingClaims: 3,
-          targetAchievement: 68,
-          pendingTasks: 5,
-          upcomingRenewals: 12
-        },
-        monthlyGrowth: [
-          { name: 'Jan', premium: 40000 },
-          { name: 'Feb', premium: 30000 },
-          { name: 'Mar', premium: 20000 },
-          { name: 'Apr', premium: 27800 },
-          { name: 'May', premium: 18900 },
-          { name: 'Jun', premium: 23900 },
-        ],
-        policyDistribution: [
-          { name: 'Life', value: 400 },
-          { name: 'Health', value: 300 },
-          { name: 'Motor', value: 300 },
-          { name: 'Mutual Fund', value: 200 },
-        ],
-        claimsByStatus: [
-          { name: 'Approved', value: 12 },
-          { name: 'Pending', value: 5 },
-          { name: 'Rejected', value: 2 },
-        ]
-      });
-      setUpcomingRenewals([
-        { _id: '1', client: { name: 'John Doe' }, policyNo: 'POL-001', renewalDate: '2023-11-15', premium: 12000 },
-        { _id: '2', client: { name: 'Jane Smith' }, policyNo: 'POL-002', renewalDate: '2023-11-20', premium: 8500 },
-      ]);
-      setPendingClaims([
-        { _id: '1', client: { name: 'Alice Brown' }, amount: 50000, status: 'Processing' },
-      ]);
-      setUpcomingTasks([
-        { _id: '1', title: 'Call for renewal', dueDate: '2023-11-10', priority: 'High', client: { name: 'Bob Wilson' } }
-      ]);
+      toast.error('Failed to load dashboard data.');
+      // Initialize with zeros if it's the first load and API fails
+      if (!stats.overview) {
+        setStats({
+          overview: {
+            totalClients: 0,
+            activePolicies: 0,
+            totalPremium: 0,
+            pendingClaims: 0,
+            targetAchievement: 0,
+            pendingTasks: 0,
+            upcomingRenewals: 0
+          },
+          monthlyGrowth: [],
+          policyDistribution: [],
+          claimsByStatus: []
+        });
+      }
     } finally {
       setLoading(false);
     }

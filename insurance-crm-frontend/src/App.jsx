@@ -25,6 +25,8 @@ import Notifications from "./pages/Notifications";
 import Login from "./pages/Login";
 import Tasks from "./pages/Tasks";
 import TaskForm from "./pages/TaskForm";
+import Users from "./pages/Users";
+import UserForm from "./pages/UserForm";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -98,6 +100,11 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
+
+          {/* User Management */}
+          <Route path="users" element={<Users />} />
+          <Route path="users/new" element={<UserForm />} />
+          <Route path="users/edit/:id" element={<UserForm />} />
         </Route>
       </Routes>
     </Router>
