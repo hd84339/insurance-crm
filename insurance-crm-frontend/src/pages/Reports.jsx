@@ -8,16 +8,44 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Mock Data for Reports - Cleared as requested by user
-const MOCK_DATA = {
+import { reportAPI } from '../services/api';
+
+const INITIAL_REPORT_STATE = {
   policyGrowth: [],
   claimsStatus: [],
-  agentPerformance: []
+  agentPerformance: [],
+  summary: {
+    totalRevenue: 0,
+    newPolicies: 0,
+    claimsSettled: 0,
+    settlementRatio: 0
+  }
 };
 
 const Reports = () => {
   const [activeReport, setActiveReport] = useState('summary');
   const [dateRange, setDateRange] = useState('thisMonth');
+  const [reportData, setReportData] = useState(INITIAL_REPORT_STATE);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [dateRange]);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await reportAPI.getDashboard();
+      if (response.data && response.data.data) {
+        setReportData((prev) => ({ ...prev, ...response.data.data }));
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load report data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -39,7 +67,7 @@ const Reports = () => {
               <div className="card h-80">
                 <h3 className="text-lg font-semibold mb-4">Policy Type Distribution</h3>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={MOCK_DATA.policyGrowth}>
+                  <BarChart data={reportData.policyGrowth}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -54,7 +82,7 @@ const Reports = () => {
               <div className="card h-80">
                 <h3 className="text-lg font-semibold mb-4">Sales Trend</h3>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={MOCK_DATA.policyGrowth}>
+                  <LineChart data={reportData.policyGrowth}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -108,7 +136,7 @@ const Reports = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={MOCK_DATA.claimsStatus}
+                      data={reportData.claimsStatus}
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
@@ -116,7 +144,7 @@ const Reports = () => {
                       dataKey="value"
                       label
                     >
-                      {MOCK_DATA.claimsStatus.map((entry, index) => (
+                      {reportData.claimsStatus.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -134,25 +162,23 @@ const Reports = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                 <p className="text-blue-100 mb-1">Total Revenue</p>
-                <h3 className="text-3xl font-bold">₹ 12.5L</h3>
-                <p className="text-sm text-blue-100 mt-2">+12% from last month</p>
+                <h3 className="text-3xl font-bold">₹ {reportData.summary?.totalRevenue?.toLocaleString() || 0}</h3>
               </div>
               <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
                 <p className="text-purple-100 mb-1">New Policies</p>
-                <h3 className="text-3xl font-bold">45</h3>
-                <p className="text-sm text-purple-100 mt-2">+5% from last month</p>
+                <h3 className="text-3xl font-bold">{reportData.summary?.newPolicies || 0}</h3>
               </div>
               <div className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white">
                 <p className="text-orange-100 mb-1">Claims Settled</p>
-                <h3 className="text-3xl font-bold">12</h3>
-                <p className="text-sm text-orange-100 mt-2">95% settlement ratio</p>
+                <h3 className="text-3xl font-bold">{reportData.summary?.claimsSettled || 0}</h3>
+                <p className="text-sm text-orange-100 mt-2">{reportData.summary?.settlementRatio || 0}% settlement ratio</p>
               </div>
             </div>
 
             <div className="card h-96">
               <h3 className="text-lg font-semibold mb-6">Annual Performance Overview</h3>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={MOCK_DATA.policyGrowth}>
+                <BarChart data={reportData.policyGrowth}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -230,7 +256,13 @@ const Reports = () => {
         </div>
 
         {/* Report View */}
-        {renderContent()}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="h-12 w-12 rounded-full border-b-2 border-blue-600 animate-spin"></div>
+          </div>
+        ) : (
+          renderContent()
+        )}
       </div>
     </div>
   );

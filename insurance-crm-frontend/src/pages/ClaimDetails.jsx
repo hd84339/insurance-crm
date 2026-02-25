@@ -24,19 +24,6 @@ const ClaimDetails = () => {
       setClaim(response.data.data);
     } catch (error) {
       console.error(error);
-      // Mock data
-      setClaim({
-        _id: id,
-        claimNo: 'CLM-001',
-        policy: { _id: '1', policyNo: 'POL-001', type: 'Life', company: 'LIC' },
-        client: { _id: '101', name: 'John Doe', email: 'john@example.com', phone: '+91 9876543210' },
-        amount: 50000,
-        status: 'Pending',
-        priority: 'High',
-        date: '2023-10-25',
-        description: 'Claim regarding hospitalization for viral fever.',
-        documents: ['hospital_bill.pdf', 'discharge_summary.pdf']
-      });
       if (error.response?.status !== 404) {
         toast.error("Failed to load claim details");
       }
@@ -158,8 +145,8 @@ const ClaimDetails = () => {
               <div>
                 <p className="text-sm text-gray-500">Priority</p>
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${claim.priority === 'High' ? 'bg-red-100 text-red-800' :
-                    claim.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
+                  claim.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
                   }`}>
                   {claim.priority}
                 </span>

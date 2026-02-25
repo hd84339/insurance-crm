@@ -23,24 +23,6 @@ const PolicyDetails = () => {
       setPolicy(response.data.data);
     } catch (error) {
       console.error(error);
-      // Mock data if API fails
-      setPolicy({
-        _id: id,
-        policyNo: 'POL-8899',
-        type: 'Life',
-        company: 'LIC',
-        premium: 15000,
-        sumAssured: 500000,
-        term: 20,
-        frequency: 'Annual',
-        startDate: '2020-01-01',
-        renewalDate: '2023-12-01',
-        maturityDate: '2040-01-01',
-        status: 'Active',
-        client: { _id: '101', name: 'John Doe', phone: '+91 9876543210' },
-        nominee: { name: 'Jane Doe', relation: 'Spouse' },
-        claims: []
-      });
       if (error.response?.status !== 404) {
         toast.error("Failed to load policy details");
       }
@@ -78,7 +60,7 @@ const PolicyDetails = () => {
             <h1 className="text-2xl font-bold text-gray-900">Policy #{policy.policyNo}</h1>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span className={`badge ${policy.status === 'Active' ? 'badge-success' :
-                  policy.status === 'Lapsed' ? 'badge-danger' : 'badge-warning'
+                policy.status === 'Lapsed' ? 'badge-danger' : 'badge-warning'
                 }`}>
                 {policy.status}
               </span>

@@ -24,25 +24,6 @@ const ClientDetails = () => {
       setClient(response.data.data);
     } catch (error) {
       console.error(error);
-      // Mock data if API fails
-      setClient({
-        _id: id,
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "+91 9876543210",
-        address: "123 Main St, Mumbai, MH",
-        dob: "1985-05-15",
-        clientType: "Individual",
-        status: "Active",
-        policies: [
-          { _id: '101', policyNo: 'POL-8899', type: 'Life', company: 'LIC', premium: 15000, status: 'Active', renewalDate: '2023-12-01' },
-          { _id: '102', policyNo: 'HLT-5544', type: 'Health', company: 'HDFC Ergo', premium: 8000, status: 'Active', renewalDate: '2023-11-20' }
-        ],
-        claims: [],
-        reminders: [
-          { _id: '201', title: 'Renewal Follow-up', dueDate: '2023-11-15', status: 'Pending', priority: 'High' }
-        ]
-      });
       if (error.response?.status !== 404) {
         toast.error("Failed to load client details");
       }

@@ -27,6 +27,10 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+// Trust the first proxy (e.g., Render, Vercel)
+// This is required for express-rate-limit to work correctly behind reverse proxies
+app.set('trust proxy', 1);
+
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',

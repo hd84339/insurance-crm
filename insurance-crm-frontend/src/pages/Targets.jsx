@@ -22,42 +22,6 @@ const Targets = () => {
       setTargets(response.data.data || []);
     } catch (error) {
       console.error(error);
-      // Mock data
-      setTargets([
-        {
-          _id: '1',
-          type: 'Premium',
-          period: 'Monthly',
-          startDate: '2023-11-01',
-          endDate: '2023-11-30',
-          targetValue: 500000,
-          achievedValue: 350000,
-          status: 'Active',
-          agent: { name: 'Me' } // For now single user or agent view
-        },
-        {
-          _id: '2',
-          type: 'Policies',
-          period: 'Quarterly',
-          startDate: '2023-10-01',
-          endDate: '2023-12-31',
-          targetValue: 50,
-          achievedValue: 20,
-          status: 'Active',
-          agent: { name: 'Me' }
-        },
-        {
-          _id: '3',
-          type: 'Premium',
-          period: 'Yearly',
-          startDate: '2023-01-01',
-          endDate: '2023-12-31',
-          targetValue: 5000000,
-          achievedValue: 6000000,
-          status: 'Completed',
-          agent: { name: 'Me' }
-        },
-      ]);
       if (error.response?.status !== 404) {
         toast.error("Failed to load targets");
       }

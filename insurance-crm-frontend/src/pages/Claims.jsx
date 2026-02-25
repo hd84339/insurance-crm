@@ -41,12 +41,6 @@ const Claims = () => {
       }));
     } catch (error) {
       console.error(error);
-      // Mock data for demo
-      setClaims([
-        { _id: '1', claimNo: 'CLM-001', policy: { policyNo: 'POL-001' }, client: { name: 'John Doe' }, amount: 50000, status: 'Pending', priority: 'High', date: '2023-10-25' },
-        { _id: '2', claimNo: 'CLM-002', policy: { policyNo: 'HLT-002' }, client: { name: 'Jane Smith' }, amount: 12000, status: 'Approved', priority: 'Medium', date: '2023-10-20' },
-        { _id: '3', claimNo: 'CLM-003', policy: { policyNo: 'MOT-005' }, client: { name: 'Rahul Kumar' }, amount: 5000, status: 'Rejected', priority: 'Low', date: '2023-10-15' },
-      ]);
       if (error.response?.status !== 404) {
         toast.error("Failed to load claims");
       }
@@ -207,8 +201,8 @@ const Claims = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${claim.priority === 'High' ? 'bg-red-100 text-red-800' :
-                          claim.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
+                        claim.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
                         }`}>
                         {claim.priority}
                       </span>
