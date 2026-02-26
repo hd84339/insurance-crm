@@ -16,6 +16,7 @@ const Profile = () => {
         avatar: null
     });
     const [passwords, setPasswords] = useState({
+        oldPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
@@ -64,6 +65,9 @@ const Profile = () => {
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
+        if (!passwords.oldPassword) {
+            return toast.error("Please enter your current password");
+        }
         if (!passwords.newPassword) return;
         if (passwords.newPassword !== passwords.confirmPassword) {
             return toast.error("Passwords do not match");
@@ -72,9 +76,10 @@ const Profile = () => {
         setLoading(true);
         try {
             await userAPI.updateProfile({
+                oldPassword: passwords.oldPassword,
                 password: passwords.newPassword
             });
-            setPasswords({ newPassword: '', confirmPassword: '' });
+            setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
             toast.success("Password updated successfully");
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to update password");
@@ -324,6 +329,19 @@ const Profile = () => {
                         </h3>
                         <form onSubmit={handlePasswordChange} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">Old Password</label>
+                                    <div className="relative mt-1">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            value={passwords.oldPassword}
+                                            onChange={(e) => setPasswords({ ...passwords, oldPassword: e.target.value })}
+                                            className="input-field w-full pl-10"
+                                            placeholder="••••••••"
+                                        />
+                                    </div>
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">New Password</label>
                                     <div className="relative mt-1">
@@ -354,7 +372,7 @@ const Profile = () => {
                             <div className="flex justify-end pt-4 border-t">
                                 <button
                                     type="submit"
-                                    disabled={loading || !passwords.newPassword}
+                                    disabled={loading || !passwords.newPassword || !passwords.oldPassword}
                                     className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50"
                                 >
                                     Update Password

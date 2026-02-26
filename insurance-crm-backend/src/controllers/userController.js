@@ -35,16 +35,34 @@ exports.getProfile = async (req, res) => {
 // @access  Private
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, email, phone, location, bio } = req.body;
+        const { name, email, phone, location, bio, oldPassword, password } = req.body;
 
         // For now, update the default user. In production, use req.user._id
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
             });
+        }
+
+        if (password) {
+            if (!oldPassword) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Please provide your current password to update it'
+                });
+            }
+
+            const isMatch = await user.comparePassword(oldPassword);
+            if (!isMatch) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Incorrect current password'
+                });
+            }
+            user.password = password;
         }
 
         // Update fields
@@ -55,6 +73,9 @@ exports.updateProfile = async (req, res) => {
         if (bio) user.bio = bio;
 
         await user.save();
+
+        // Prevent password from returning to client
+        user.password = undefined;
 
         res.status(200).json({
             success: true,

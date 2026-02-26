@@ -4,8 +4,8 @@ import { toast } from 'react-hot-toast';
 import { authAPI } from '../services/api';
 
 const Login = () => {
-    const [email, setEmail] = useState('hd84339@gmail.com');
-    const [password, setPassword] = useState('Admin@123');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
